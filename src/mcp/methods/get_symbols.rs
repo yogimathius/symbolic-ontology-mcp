@@ -30,21 +30,43 @@ impl MethodCall {
 }
 
 /// Error codes for MCP protocol
+///
+/// These error codes follow the JSON-RPC 2.0 specification, with additional MCP-specific error codes.
+///
+/// References:
+/// - JSON-RPC 2.0 Specification: https://www.jsonrpc.org/specification#error_object
+/// - MCP Specification: https://modelcontextprotocol.io
+/// - RMCP (Rust MCP) SDK: https://github.com/4t145/rmcp
+///
+/// JSON-RPC 2.0 specifies error codes in these ranges:
+/// - -32700 to -32600: Reserved for pre-defined errors
+/// - -32000 to -32099: Reserved for implementation-defined server errors
+/// - Client-defined codes may be used for custom errors (not used here)
 #[derive(Debug, Clone, Copy)]
 pub enum RmcpErrorCode {
-    /// -32600: Invalid request
+    /// -32600: Invalid request - The JSON sent is not a valid Request object
+    /// as defined in the JSON-RPC 2.0 specification
     InvalidRequest,
-    /// -32601: Method not found
+
+    /// -32601: Method not found - The method does not exist / is not available
     MethodNotFound,
-    /// -32602: Invalid params
+
+    /// -32602: Invalid params - Invalid method parameter(s)
     InvalidParams,
-    /// -32603: Internal error
+
+    /// -32603: Internal error - Internal JSON-RPC error
     InternalError,
-    /// -32000: Server error
+
+    /// -32000: Server error - Generic server-side error
+    /// This is an implementation-defined server error
     ServerError,
-    /// -32001: Not found
+
+    /// -32001: Not found - Requested resource not found
+    /// This is an MCP-specific error code
     NotFound,
-    /// -32002: Conflict
+
+    /// -32002: Conflict - Resource conflict (e.g., duplicate ID)
+    /// This is an MCP-specific error code
     Conflict,
 }
 
@@ -110,6 +132,9 @@ impl RmcpError {
     }
 
     /// Convert to a JSON-RPC error response
+    ///
+    /// This creates a standard JSON-RPC 2.0 error response following the specification:
+    /// https://www.jsonrpc.org/specification#error_object
     pub fn to_jsonrpc_error(&self, id: &str) -> serde_json::Value {
         let code = self.error_code();
         serde_json::json!({

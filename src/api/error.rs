@@ -80,25 +80,39 @@ impl From<RepositoryError> for ApiError {
 }
 
 /// Maps from RMCP errors to API errors
+///
+/// This mapping translates errors from the MCP protocol (defined in JSON-RPC 2.0
+/// and MCP specifications) to appropriate HTTP status codes and messages.
+///
+/// References:
+/// - JSON-RPC 2.0: https://www.jsonrpc.org/specification#error_object
+/// - MCP Specification: https://modelcontextprotocol.io
+/// - HTTP Status Codes: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 impl From<crate::mcp::methods::get_symbols::RmcpError> for ApiError {
     fn from(err: crate::mcp::methods::get_symbols::RmcpError) -> Self {
         use crate::mcp::methods::get_symbols::{RmcpError, RmcpErrorCode};
 
         match err {
+            // Invalid params in JSON-RPC (-32602) maps to HTTP 400 Bad Request
             RmcpError::ParseError(msg) => ApiError::BadRequest(msg),
             RmcpError::RepositoryError(msg) => {
                 // For repository errors, we can determine the type based on message content
                 // since we don't have direct access to original RepositoryError
                 if msg.starts_with("Not found:") {
+                    // MCP NotFound (-32001) maps to HTTP 404 Not Found
                     ApiError::NotFound(msg)
                 } else if msg.starts_with("Conflict:") {
+                    // MCP Conflict (-32002) maps to HTTP 409 Conflict
                     ApiError::Conflict(msg)
                 } else if msg.starts_with("Validation:") {
+                    // Maps to HTTP 400 Bad Request
                     ApiError::BadRequest(msg)
                 } else {
+                    // All other server errors map to HTTP 500 Internal Server Error
                     ApiError::Internal(msg)
                 }
             }
+            // Internal error in JSON-RPC (-32603) maps to HTTP 500 Internal Server Error
             RmcpError::Other(msg) => ApiError::Internal(msg),
         }
     }

@@ -2,6 +2,12 @@ use rmcp::schemars;
 use serde::{Deserialize, Serialize};
 
 /// Parameters for the get_symbols MCP method
+///
+/// This schema follows the Model Context Protocol (MCP) specification for method parameters.
+/// Reference: https://modelcontextprotocol.io
+///
+/// The `get_symbols` method allows clients to query the symbolic ontology with optional
+/// filtering by category and search terms.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct GetSymbolsParams {
     /// Category filter (dream, mythological, etc.)
@@ -20,6 +26,9 @@ fn default_limit() -> usize {
 }
 
 /// Response for the get_symbols MCP method
+///
+/// This schema follows the Model Context Protocol (MCP) specification for method responses.
+/// Reference: https://modelcontextprotocol.io
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct GetSymbolsResponse {
     /// List of symbols matching the query
@@ -30,6 +39,9 @@ pub struct GetSymbolsResponse {
 }
 
 /// Data transfer object for Symbol, used in MCP responses
+///
+/// This DTO represents the Symbol domain model in a serializable format
+/// suitable for JSON transmission via the MCP protocol.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct SymbolDTO {
     /// Unique identifier for the symbol
