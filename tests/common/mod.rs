@@ -1,4 +1,5 @@
 pub mod fixtures;
+pub mod mock_repository;
 
 /// Initialize test environment
 pub fn setup() {
