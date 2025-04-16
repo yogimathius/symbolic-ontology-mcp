@@ -24,6 +24,8 @@ mod domain;
 mod infrastructure;
 
 // TODO: This module belongs to the Dream Interpretation Backend, not the Symbolic Ontology
+// It will be removed from this repository and implemented in a separate MCP client service
+// that consumes data from this service for dream interpretation.
 /// LLM integration module for language model interaction
 mod llm;
 
@@ -44,6 +46,10 @@ mod utils;
 ///
 /// The server uses a repository pattern to abstract data access, with
 /// in-memory implementation available for development and testing.
+///
+/// Note: This server does NOT handle LLM integration directly - that functionality
+/// will be implemented in a separate MCP client service. This service focuses solely
+/// on providing accurate symbolic data as an MCP server.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load configuration from environment

@@ -33,16 +33,8 @@
 - ✅ Implement get_symbols MCP method handler
 - ⬜ Connect MCP handlers to Axum server
 - ⬜ Implement MCP server middleware
-- ⬜ Add MCP client example
-- ⬜ Add additional MCP methods (interpret_symbol)
-
-### LLM Integration
-
-- ✅ Define LLM client interface
-- ✅ Create basic prompt templates
-- ⬜ Implement OpenRouter integration
-- ⬜ Add prompt optimization for symbolic reasoning
-- ⬜ Implement caching for LLM responses
+- ⬜ Create example MCP client configuration (without LLM)
+- ⬜ Add additional data-focused MCP methods (e.g., get_symbol_sets, get_related_symbols)
 
 ### Persistence
 
@@ -64,6 +56,7 @@
 - ⬜ Add architecture diagram
 - ⬜ Document API endpoints
 - ⬜ Create MCP usage examples
+- ⬜ Document separation of concerns between this service and LLM client
 
 ### Project Infrastructure
 
@@ -77,4 +70,6 @@ The most immediate priorities appear to be:
 1. Complete the Tower/Axum integration testing infrastructure (replace the complex tower_examples.rs with simpler, more focused tests)
 2. Fully connect the MCP implementation to the API server
 3. Enhance the API testing coverage
-4. Implement the LLM integration for symbol interpretation
+4. Focus on data-focused MCP methods for the symbolic ontology
+
+> **Note:** LLM integration (OpenRouter, prompt optimization, and interpretation) will be implemented in a separate MCP client service. This service focuses solely on providing accurate symbolic data as an MCP server.

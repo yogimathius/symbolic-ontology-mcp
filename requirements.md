@@ -18,12 +18,13 @@ Implement a Rust backend server using Axum that acts as a symbolic reasoning eng
 
 - Implement structured ontologies of symbols (dream, mythological, archetypal)
 - Provide an MCP method (`get_symbols`) allowing external MCP clients to query symbolic data
-- Implement an endpoint (`POST /interpret`) that accepts symbolic input and returns an LLM-generated, MCP-grounded interpretation
+- ~~Implement an endpoint (`POST /interpret`) that accepts symbolic input and returns an LLM-generated, MCP-grounded interpretation~~
 
-### Prompt Templating for LLM
+> **Architecture Note:** This repository implements only the MCP server providing symbolic data. The interpretation endpoint that uses LLM integration will be implemented in a separate MCP client service. This separation follows best practices for MCP architecture, keeping the data server focused on providing accurate information while allowing various clients to handle interpretation as needed.
 
-- Create clearly structured prompt templates to minimize hallucination
-- Integrate with existing OpenRouter setup (e.g., DeepSeek model)
+### ~~Prompt Templating for LLM~~
+
+> **Architecture Note:** Prompt templating and LLM integration are not part of this service. These features will be implemented in a separate MCP client service for dream interpretation.
 
 ### Protocol & Schema
 
@@ -37,8 +38,8 @@ Implement a Rust backend server using Axum that acts as a symbolic reasoning eng
 - Axum handlers for HTTP endpoints
 - MCP handlers using rmcp SDK
 - Ontology schema (SymbolSet, Symbol)
-- LLM prompt builders
-- MCP server/client demonstration setup
+- ~~LLM prompt builders~~
+- MCP server demonstration setup
 - Error handling and structured logging
 
 ## TDD Guardrails
@@ -67,14 +68,14 @@ Implement a Rust backend server using Axum that acts as a symbolic reasoning eng
 - Achieve minimum 80% test coverage
 - Run `cargo fmt` before commits
 - Use `cargo check` frequently during development
-- Create mock implementations for external dependencies (OpenRouter, databases)
+- Create mock implementations for external dependencies (~~OpenRouter,~~ databases)
 
 ### Testing Categories
 
 1. Unit tests for domain models and business logic
 2. Integration tests for HTTP endpoints
 3. Schema validation tests for MCP protocol compliance
-4. End-to-end tests with mock LLM responses
+4. ~~End-to-end tests with mock LLM responses~~
 
 ## Cursor IDE Guidelines
 
@@ -107,12 +108,11 @@ src/
 ├── domain/         # Core business logic
 │   ├── symbols.rs  # Symbol definitions
 │   └── ontology.rs # Ontology implementations
-├── llm/            # LLM integration
-│   ├── client.rs   # OpenRouter client
-│   └── prompts.rs  # Prompt templates
 ├── utils/          # Shared utilities
 └── main.rs         # Application entry point
 ```
+
+> **Note:** The `llm/` directory is intentionally omitted as LLM integration is implemented in a separate MCP client service.
 
 ### Module Boundaries
 
