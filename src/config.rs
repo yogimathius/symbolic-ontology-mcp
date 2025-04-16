@@ -1,0 +1,79 @@
+use std::env;
+use std::net::SocketAddr;
+use std::str::FromStr;
+
+/// Configuration for the application, loaded from environment variables
+#[derive(Debug, Clone)]
+pub struct Config {
+    /// Address to bind the HTTP server to (default: 127.0.0.1:3000)
+    pub server_addr: SocketAddr,
+    /// Log level (default: info)
+    pub log_level: String,
+    /// Whether to use in-memory repository (default: true)
+    pub use_memory_repository: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            server_addr: SocketAddr::from(([127, 0, 0, 1], 3000)),
+            log_level: "info".to_string(),
+            use_memory_repository: true,
+        }
+    }
+}
+
+impl Config {
+    /// Load configuration from environment variables
+    pub fn from_env() -> Self {
+        let server_addr = env::var("SERVER_ADDR")
+            .ok()
+            .and_then(|addr| SocketAddr::from_str(&addr).ok())
+            .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 3000)));
+
+        let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
+
+        let use_memory_repository = env::var("USE_MEMORY_REPOSITORY")
+            .map(|val| val.to_lowercase() == "true" || val == "1")
+            .unwrap_or(true);
+
+        Self {
+            server_addr,
+            log_level,
+            use_memory_repository,
+        }
+    }
+
+    /// Get the tracing filter based on the log level
+    pub fn get_tracing_filter(&self) -> String {
+        format!(
+            "dream_ontology_mcp={},tower_http={}",
+            self.log_level, self.log_level
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_config() {
+        let config = Config::default();
+        assert_eq!(config.server_addr.to_string(), "127.0.0.1:3000");
+        assert_eq!(config.log_level, "info");
+        assert!(config.use_memory_repository);
+    }
+
+    #[test]
+    fn test_get_tracing_filter() {
+        let config = Config {
+            log_level: "debug".to_string(),
+            ..Config::default()
+        };
+        assert_eq!(
+            config.get_tracing_filter(),
+            "dream_ontology_mcp=debug,tower_http=debug"
+        );
+    }
+}

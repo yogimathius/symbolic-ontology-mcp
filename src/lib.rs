@@ -9,6 +9,7 @@
  * - **Domain Models**: Define the core business objects like `Symbol` and `SymbolSet`
  * - **MCP Implementation**: Protocol-compliant methods for symbolic reasoning
  * - **Infrastructure**: Repository implementations and external integrations
+ * - **API**: HTTP endpoint handlers and routing for the Axum server
  *
  * ## Usage Example
  *
@@ -37,6 +38,9 @@ pub mod mcp;
 
 /// Infrastructure implementations for repositories and external services
 pub mod infrastructure;
+
+/// API endpoints, handlers, and routing
+pub mod api;
 
 /// Utility functions and shared helpers
 mod utils;

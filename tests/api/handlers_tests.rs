@@ -1,13 +1,6 @@
-use std::sync::Arc;
-
-use axum::{Json, extract::State, http::StatusCode};
-
-// We need to import directly from the crate
 use dream_ontology_mcp::domain::RepositoryFactory;
-use dream_ontology_mcp::domain::SymbolRepository;
 use dream_ontology_mcp::infrastructure::memory_repository::MemoryRepositoryFactory;
 
-// Add a dependency on the correct modules instead of using API modules
 #[tokio::test]
 async fn test_list_symbols_integration() {
     // Set up repository with test data

@@ -48,35 +48,6 @@ pub struct SymbolDTO {
     pub related_symbols: Vec<String>,
 }
 
-/// Parameters for the interpret_symbol MCP method
-#[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
-pub struct InterpretSymbolParams {
-    /// The symbol ID to interpret
-    pub symbol_id: String,
-
-    /// Optional context for the interpretation
-    pub context: Option<String>,
-
-    /// Optional specific question about the symbol
-    pub query: Option<String>,
-}
-
-/// Response for the interpret_symbol MCP method
-#[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
-pub struct InterpretSymbolResponse {
-    /// The interpreted symbol ID
-    pub symbol_id: String,
-
-    /// The interpretation text
-    pub interpretation: String,
-
-    /// The context that was used for interpretation
-    pub context: Option<String>,
-
-    /// Related symbols mentioned in the interpretation
-    pub related_symbols: Vec<String>,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
