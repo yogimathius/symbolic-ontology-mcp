@@ -3,6 +3,15 @@ name = "dream-ontology-mcp"
 version = "0.1.0"
 edition = "2024"
 
+# Add lib section to expose our code for integration tests
+[lib]
+name = "dream_ontology_mcp"
+path = "src/lib.rs"
+
+[[test]]
+name = "integration"
+path = "tests/lib.rs"
+
 [dependencies]
 async-trait = "0.1.88"
 axum = "0.8.3"
@@ -14,3 +23,6 @@ tokio = { version = "1.44.2", features = ["full", "macros"] }
 tower-http = { version = "0.6.2", features = ["trace"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+
+[dev-dependencies]
+tokio-test = "0.4.4"
