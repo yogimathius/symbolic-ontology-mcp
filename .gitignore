@@ -1,2 +1,5 @@
 /target
 /.cursor/
+# Ignore old documentation files that have been moved to docs/
+/*.md
+!/README.md
