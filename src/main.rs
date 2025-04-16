@@ -1,14 +1,18 @@
 use std::net::SocketAddr;
+use std::sync::Arc;
 
-use axum::{Router, routing::get};
+use axum::serve;
 use tokio::net::TcpListener;
-use tower_http::trace::TraceLayer;
 use tracing::{debug, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+use crate::domain::RepositoryFactory;
+use crate::infrastructure::memory_repository::MemoryRepositoryFactory;
+
 mod api;
 mod domain;
-mod llm;
+mod infrastructure;
+mod llm; // TODO: This should be removed as it belongs to the Dream Interpretation Backend
 mod mcp;
 mod utils;
 
@@ -23,29 +27,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    info!("Starting Dream Ontology MCP server v{}", utils::version());
+    info!(
+        "Starting Dream Ontology Symbolic MCP Server v{}",
+        utils::version()
+    );
 
-    // For now, we'll use a simple API router without the MCP server
-    // since we're having issues with the RMCP library
-    debug!("Initialized with get_symbols handler");
+    // Initialize repositories with test data
+    let repo_factory = MemoryRepositoryFactory::new().with_test_data();
+    let symbol_repository = repo_factory.create_symbol_repository();
 
-    // Create router with API routes
-    let app = Router::new()
-        .route("/", get(root_handler))
-        .merge(api::router())
-        .layer(TraceLayer::new_for_http());
+    // Create the API router with repository dependency
+    let app = api::router(symbol_repository.clone());
 
-    // Start server
+    // TODO: Initialize MCP server with method handlers
+    // using the same repository
+    debug!("API Server initialized with symbol repository");
+
+    // Start HTTP server
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    info!("Listening on {}", addr);
+    info!("API Server listening on {}", addr);
 
-    let listener = TcpListener::bind(addr).await?;
-    axum::serve(listener, app).await?;
+    // Create a TCP listener and serve with Axum
+    let listener = TcpListener::bind(&addr).await?;
+    serve(listener, app.into_make_service()).await?;
+
+    info!("Server shutting down");
 
     Ok(())
-}
-
-// Basic health check handler
-async fn root_handler() -> &'static str {
-    "Dream Ontology MCP Server - OK"
 }
