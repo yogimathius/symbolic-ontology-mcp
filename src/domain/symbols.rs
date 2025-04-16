@@ -41,6 +41,18 @@ impl Symbol {
         }
     }
 
+    /// Set or update the category
+    pub fn with_category(mut self, category: &str) -> Self {
+        self.category = category.to_string();
+        self
+    }
+
+    /// Add related symbols
+    pub fn with_related(mut self, related: Vec<&str>) -> Self {
+        self.related_symbols = related.into_iter().map(|s| s.to_string()).collect();
+        self
+    }
+
     /// Add an interpretation for a specific context
     pub fn add_interpretation(&mut self, context: String, interpretation: String) {
         self.interpretations.insert(context, interpretation);
