@@ -13,5 +13,8 @@ pub mod mcp;
 // LLM integration
 pub mod llm;
 
+// Infrastructure implementations
+pub mod infrastructure;
+
 // Utilities
 pub mod utils;
