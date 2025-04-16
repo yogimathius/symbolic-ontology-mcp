@@ -35,6 +35,24 @@ impl SymbolSet {
         }
     }
 
+    /// Create a new symbol set with initial symbols
+    pub fn with_symbols(mut self, symbol_ids: Vec<&str>) -> Self {
+        // Note: This just stores empty placeholders - typically you'd populate
+        // with real symbols later through the repository
+        for id in symbol_ids {
+            self.symbols.insert(
+                id.to_string(),
+                Symbol::new(
+                    id.to_string(),
+                    id.to_string(), // Using ID as name for placeholder
+                    "".to_string(), // Empty category
+                    "".to_string(), // Empty description
+                ),
+            );
+        }
+        self
+    }
+
     /// Add a symbol to the set
     pub fn add_symbol(&mut self, symbol: Symbol) -> Option<Symbol> {
         self.symbols.insert(symbol.id.clone(), symbol)
