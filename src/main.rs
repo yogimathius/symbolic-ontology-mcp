@@ -23,12 +23,6 @@ mod domain;
 /// Infrastructure module for external integrations and persistence
 mod infrastructure;
 
-// TODO: This module belongs to the Dream Interpretation Backend, not the Symbolic Ontology
-// It will be removed from this repository and implemented in a separate MCP client service
-// that consumes data from this service for dream interpretation.
-/// LLM integration module for language model interaction
-mod llm;
-
 /// Logging configuration and utilities
 mod logging;
 

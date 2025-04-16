@@ -18,7 +18,6 @@ Implement a Rust backend server using Axum that acts as a symbolic reasoning eng
 
 - Implement structured ontologies of symbols (dream, mythological, archetypal)
 - Provide an MCP method (`get_symbols`) allowing external MCP clients to query symbolic data
-- ~~Implement an endpoint (`POST /interpret`) that accepts symbolic input and returns an LLM-generated, MCP-grounded interpretation~~
 
 > **Architecture Note:** This repository implements only the MCP server providing symbolic data. The interpretation endpoint that uses LLM integration will be implemented in a separate MCP client service. This separation follows best practices for MCP architecture, keeping the data server focused on providing accurate information while allowing various clients to handle interpretation as needed.
 
