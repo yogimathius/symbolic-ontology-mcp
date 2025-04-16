@@ -23,8 +23,13 @@ impl MockSymbolRepository {
         }
     }
 
-    pub fn with_test_data(mut self) -> Self {
-        let test_symbols = fixtures::create_test_symbols();
+    pub fn with_test_data(self) -> Self {
+        let test_symbols = vec![
+            fixtures::create_test_symbol("water", "Water", "dream"),
+            fixtures::create_test_symbol("fire", "Fire", "dream"),
+            fixtures::create_test_symbol("mountain", "Mountain", "dream"),
+        ];
+
         let mut symbols_map = HashMap::new();
         for symbol in test_symbols {
             symbols_map.insert(symbol.id.clone(), symbol);
@@ -50,7 +55,7 @@ impl MockSymbolRepository {
 
 #[async_trait]
 impl SymbolRepository for MockSymbolRepository {
-    async fn get(&self, id: &str) -> RepositoryResult<Symbol> {
+    async fn get_symbol(&self, id: &str) -> RepositoryResult<Symbol> {
         self.check_failure()?;
 
         let symbols = self.symbols.read().unwrap();
@@ -63,25 +68,23 @@ impl SymbolRepository for MockSymbolRepository {
             )))
     }
 
-    async fn list(
-        &self,
-        limit: Option<usize>,
-        offset: Option<usize>,
-    ) -> RepositoryResult<Vec<Symbol>> {
+    async fn list_symbols(&self, category: Option<&str>) -> RepositoryResult<Vec<Symbol>> {
         self.check_failure()?;
 
         let symbols = self.symbols.read().unwrap();
-        let offset = offset.unwrap_or(0);
-        let symbols: Vec<Symbol> = symbols.values().cloned().collect();
+        let symbols: Vec<Symbol> = match category {
+            Some(cat) => symbols
+                .values()
+                .filter(|s| s.category == cat)
+                .cloned()
+                .collect(),
+            None => symbols.values().cloned().collect(),
+        };
 
-        if let Some(limit) = limit {
-            Ok(symbols.into_iter().skip(offset).take(limit).collect())
-        } else {
-            Ok(symbols.into_iter().skip(offset).collect())
-        }
+        Ok(symbols)
     }
 
-    async fn search(&self, query: &str) -> RepositoryResult<Vec<Symbol>> {
+    async fn search_symbols(&self, query: &str) -> RepositoryResult<Vec<Symbol>> {
         self.check_failure()?;
 
         let symbols = self.symbols.read().unwrap();
@@ -99,7 +102,7 @@ impl SymbolRepository for MockSymbolRepository {
         Ok(results)
     }
 
-    async fn create(&self, symbol: Symbol) -> RepositoryResult<Symbol> {
+    async fn create_symbol(&self, symbol: Symbol) -> RepositoryResult<Symbol> {
         self.check_failure()?;
 
         let mut symbols = self.symbols.write().unwrap();
@@ -115,7 +118,7 @@ impl SymbolRepository for MockSymbolRepository {
         Ok(symbol_clone)
     }
 
-    async fn update(&self, symbol: Symbol) -> RepositoryResult<Symbol> {
+    async fn update_symbol(&self, symbol: Symbol) -> RepositoryResult<Symbol> {
         self.check_failure()?;
 
         let mut symbols = self.symbols.write().unwrap();
@@ -131,7 +134,7 @@ impl SymbolRepository for MockSymbolRepository {
         Ok(symbol_clone)
     }
 
-    async fn delete(&self, id: &str) -> RepositoryResult<()> {
+    async fn delete_symbol(&self, id: &str) -> RepositoryResult<()> {
         self.check_failure()?;
 
         let mut symbols = self.symbols.write().unwrap();
@@ -161,8 +164,22 @@ impl MockSymbolSetRepository {
         }
     }
 
-    pub fn with_test_data(mut self) -> Self {
-        let test_sets = fixtures::create_test_symbol_sets();
+    pub fn with_test_data(self) -> Self {
+        let test_sets = vec![
+            fixtures::create_test_symbol_set(
+                "dream-symbols",
+                "Dream Symbols",
+                "dream",
+                "Common symbols in dreams",
+            ),
+            fixtures::create_test_symbol_set(
+                "myth-symbols",
+                "Mythological Symbols",
+                "mythological",
+                "Symbols from mythology",
+            ),
+        ];
+
         let mut sets_map = HashMap::new();
         for set in test_sets {
             sets_map.insert(set.id.clone(), set);
@@ -188,7 +205,7 @@ impl MockSymbolSetRepository {
 
 #[async_trait]
 impl SymbolSetRepository for MockSymbolSetRepository {
-    async fn get(&self, id: &str) -> RepositoryResult<SymbolSet> {
+    async fn get_symbol_set(&self, id: &str) -> RepositoryResult<SymbolSet> {
         self.check_failure()?;
 
         let sets = self.symbol_sets.read().unwrap();
@@ -200,25 +217,23 @@ impl SymbolSetRepository for MockSymbolSetRepository {
             )))
     }
 
-    async fn list(
-        &self,
-        limit: Option<usize>,
-        offset: Option<usize>,
-    ) -> RepositoryResult<Vec<SymbolSet>> {
+    async fn list_symbol_sets(&self, category: Option<&str>) -> RepositoryResult<Vec<SymbolSet>> {
         self.check_failure()?;
 
         let sets = self.symbol_sets.read().unwrap();
-        let offset = offset.unwrap_or(0);
-        let sets: Vec<SymbolSet> = sets.values().cloned().collect();
+        let sets: Vec<SymbolSet> = match category {
+            Some(cat) => sets
+                .values()
+                .filter(|s| s.category == cat)
+                .cloned()
+                .collect(),
+            None => sets.values().cloned().collect(),
+        };
 
-        if let Some(limit) = limit {
-            Ok(sets.into_iter().skip(offset).take(limit).collect())
-        } else {
-            Ok(sets.into_iter().skip(offset).collect())
-        }
+        Ok(sets)
     }
 
-    async fn search(&self, query: &str) -> RepositoryResult<Vec<SymbolSet>> {
+    async fn search_symbol_sets(&self, query: &str) -> RepositoryResult<Vec<SymbolSet>> {
         self.check_failure()?;
 
         let sets = self.symbol_sets.read().unwrap();
@@ -236,7 +251,7 @@ impl SymbolSetRepository for MockSymbolSetRepository {
         Ok(results)
     }
 
-    async fn create(&self, symbol_set: SymbolSet) -> RepositoryResult<SymbolSet> {
+    async fn create_symbol_set(&self, symbol_set: SymbolSet) -> RepositoryResult<SymbolSet> {
         self.check_failure()?;
 
         let mut sets = self.symbol_sets.write().unwrap();
@@ -252,7 +267,7 @@ impl SymbolSetRepository for MockSymbolSetRepository {
         Ok(set_clone)
     }
 
-    async fn update(&self, symbol_set: SymbolSet) -> RepositoryResult<SymbolSet> {
+    async fn update_symbol_set(&self, symbol_set: SymbolSet) -> RepositoryResult<SymbolSet> {
         self.check_failure()?;
 
         let mut sets = self.symbol_sets.write().unwrap();
@@ -268,7 +283,7 @@ impl SymbolSetRepository for MockSymbolSetRepository {
         Ok(set_clone)
     }
 
-    async fn delete(&self, id: &str) -> RepositoryResult<()> {
+    async fn delete_symbol_set(&self, id: &str) -> RepositoryResult<()> {
         self.check_failure()?;
 
         let mut sets = self.symbol_sets.write().unwrap();
@@ -299,9 +314,13 @@ impl MockRepositoryFactory {
     }
 
     pub fn with_test_data(self) -> Self {
+        // Create new instances with test data
+        let symbol_repo = MockSymbolRepository::new().with_test_data();
+        let symbol_set_repo = MockSymbolSetRepository::new().with_test_data();
+
         MockRepositoryFactory {
-            symbol_repository: Arc::new(self.symbol_repository.with_test_data()),
-            symbol_set_repository: Arc::new(self.symbol_set_repository.with_test_data()),
+            symbol_repository: Arc::new(symbol_repo),
+            symbol_set_repository: Arc::new(symbol_set_repo),
         }
     }
 }
