@@ -1,11 +1,9 @@
 use axum::{Json, extract::Path};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
-use crate::domain::Symbol;
-
-// For now, we'll use a simple string as a response
-// Later, we'll implement proper error handling and responses
-type AppResult<T> = Result<T, String>;
+use super::error::{ApiError, ApiResult};
+use crate::domain::{Symbol, SymbolRepository};
 
 /// Health check handler
 pub async fn health_check() -> &'static str {
@@ -19,15 +17,21 @@ pub struct SymbolsResponse {
 }
 
 /// List all symbols
-pub async fn list_symbols() -> AppResult<Json<SymbolsResponse>> {
-    // Placeholder response - we'll implement actual data retrieval later
+pub async fn list_symbols(// We will add repository as an extension later when fully integrated
+    // State(repository): State<Arc<dyn SymbolRepository>>
+) -> ApiResult<Json<SymbolsResponse>> {
+    // For now still using placeholder data
     Ok(Json(SymbolsResponse {
         symbols: Vec::new(),
     }))
 }
 
 /// Get a specific symbol by ID
-pub async fn get_symbol(Path(id): Path<String>) -> AppResult<Json<Symbol>> {
+pub async fn get_symbol(
+    Path(id): Path<String>,
+    // State(repository): State<Arc<dyn SymbolRepository>>,
+) -> ApiResult<Json<Symbol>> {
+    // For now still using placeholder data
     // Placeholder response with empty data
     let symbol = Symbol::new(
         id.clone(),
@@ -37,6 +41,10 @@ pub async fn get_symbol(Path(id): Path<String>) -> AppResult<Json<Symbol>> {
     );
 
     Ok(Json(symbol))
+
+    // When actually implemented, this would be:
+    // let symbol = repository.get_symbol(&id).await?;
+    // Ok(Json(symbol))
 }
 
 /// Request body for symbol interpretation
@@ -58,8 +66,8 @@ pub struct InterpretResponse {
 /// Interpret a symbol
 pub async fn interpret_symbol(
     Json(request): Json<InterpretRequest>,
-) -> AppResult<Json<InterpretResponse>> {
-    // Placeholder interpretation
+) -> ApiResult<Json<InterpretResponse>> {
+    // Placeholder implementation
     Ok(Json(InterpretResponse {
         symbol_id: request.symbol_id,
         context: request.context,
