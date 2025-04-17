@@ -6,20 +6,34 @@ This document outlines the planned development roadmap for the Dream Ontology MC
 
 These are the highest priority tasks to complete in the immediate development cycle:
 
-### MCP Server Integration (Priority 1)
+### MCP Server Implementation (Priority 1) ✅
 
-- [ ] **Connect MCP to Axum Server**
+- [x] **Implement Standalone MCP Server**
 
-  - [ ] Add MCP endpoint to main Axum router
-  - [ ] Configure JSON-RPC handling middleware
-  - [ ] Implement proper error handling for MCP requests
-  - [ ] Create comprehensive integration tests
+  - [x] Create separate binary for MCP server (`src/bin/mcp_server.rs`)
+  - [x] Configure MCP server using RMCP SDK
+  - [x] Implement proper error handling for MCP requests
+  - [x] Add deployment and run instructions
 
-- [ ] **Enhance MCP Method Implementation**
-  - [ ] Complete integration of `get_symbols` MCP method
+- [ ] **Enhance MCP Tool Implementation**
+  - [x] Basic integration of `get_symbols` MCP tool
   - [ ] Add pagination support for large result sets
   - [ ] Implement parameter validation with detailed errors
   - [ ] Create unit tests for all parameter scenarios
+
+### API and MCP Server Management (Priority 2)
+
+- [ ] **Launch Script Improvements**
+
+  - [x] Create shell script for running both servers
+  - [ ] Add configuration options for ports and hosts
+  - [ ] Support environment-specific configurations
+  - [ ] Add monitoring capabilities
+
+- [ ] **Improve MCP Testing**
+  - [ ] Create end-to-end tests for MCP tools
+  - [ ] Test all error scenarios and edge cases
+  - [ ] Add benchmarking for MCP performance
 
 ### API Enhancements (Priority 2)
 
@@ -51,13 +65,13 @@ Features to be implemented after completing the current focus areas:
   - [ ] Implement weighted relationships between symbols
   - [ ] Create hierarchical classification system
 
-### Additional MCP Methods
+### Additional MCP Tools
 
-- [ ] **Implement Core Symbol Methods**
+- [ ] **Implement Core Symbol Tools**
   - [ ] `get_symbol` - Retrieve a single symbol by ID
   - [ ] `get_symbol_sets` - Retrieve sets of related symbols
   - [ ] `get_related_symbols` - Get symbols related to a given symbol
-- [ ] **Add Advanced Symbol Analysis**
+- [ ] **Add Advanced Symbol Analysis Tools**
   - [ ] `analyze_symbolic_pattern` - Identify patterns in symbol groups
   - [ ] `get_archetypal_symbols` - Get symbols by archetypal classification
   - [ ] `interpret_symbol_context` - Get contextual interpretations
@@ -121,12 +135,13 @@ Features that represent the advanced capabilities we aim to build:
 
 Throughout all development phases, we adhere to these principles:
 
-1. **Test-Driven Development**: Every feature starts with tests
-2. **Clean Architecture**: Maintain separation of domain, application, and infrastructure concerns
-3. **Documentation**: All public APIs and methods have clear documentation
-4. **Error Handling**: Comprehensive error handling with user-friendly messages
-5. **Performance**: Regular performance testing and optimization
+1. **Separation of Concerns**: Maintain clean separation between REST API server and MCP server
+2. **Test-Driven Development**: Every feature starts with tests
+3. **Clean Architecture**: Maintain separation of domain, application, and infrastructure concerns
+4. **Documentation**: All public APIs and methods have clear documentation
+5. **Error Handling**: Comprehensive error handling with user-friendly messages
+6. **Performance**: Regular performance testing and optimization
 
 ---
 
-> **Next Actions**: Complete the MCP Server Integration tasks marked as Priority 1, followed by the API Enhancements in Priority 2.
+> **Next Actions**: Complete the MCP Tool Implementation tasks and improve the API/MCP testing infrastructure.
