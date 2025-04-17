@@ -1,21 +1,25 @@
 use axum::{
     Router,
-    extract::State,
     routing::{get, post},
 };
 use std::sync::Arc;
 
 use super::handlers;
 use crate::domain::SymbolRepository;
+use crate::mcp::service::SymbolService;
+use rmcp::transport::sse_server::SseServer;
 
 /// Builds the main application router with all API routes
 pub fn router(symbol_repository: Arc<dyn SymbolRepository>) -> Router {
-    Router::new()
+    let api_router = Router::new()
         .route("/health", get(handlers::health_check))
         .route("/symbols", get(handlers::list_symbols))
         .route("/symbols/{id}", get(handlers::get_symbol))
-        .route("/interpret", post(handlers::interpret_symbol))
-        .with_state(symbol_repository)
+        .with_state(symbol_repository.clone());
+
+    // For now, just return the API router
+    // TODO: Add MCP server support once we resolve the integration issues
+    api_router
 }
 
 #[cfg(test)]

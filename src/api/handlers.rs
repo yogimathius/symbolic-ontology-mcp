@@ -129,33 +129,6 @@ fn validate_interpret_request(request: &InterpretRequest) -> Result<(), ApiError
     Ok(())
 }
 
-/// Interpret a symbol
-pub async fn interpret_symbol(
-    State(repository): State<Arc<dyn SymbolRepository>>,
-    Json(request): Json<InterpretRequest>,
-) -> ApiResult<Json<InterpretResponse>> {
-    // Validate request
-    validate_interpret_request(&request)?;
-
-    // Check if symbol exists
-    let symbol = repository.get_symbol(&request.symbol_id).await?;
-
-    // For now, we just return a placeholder interpretation
-    // In the future, this would use the LLM client to generate the interpretation
-    let interpretation = format!(
-        "Interpretation of symbol '{}' with {} and {}.",
-        symbol.name,
-        request.context.as_deref().unwrap_or("no context"),
-        request.query.as_deref().unwrap_or("no query")
-    );
-
-    Ok(Json(InterpretResponse {
-        symbol_id: request.symbol_id,
-        context: request.context,
-        interpretation,
-    }))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
