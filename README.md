@@ -1,53 +1,129 @@
 # Dream Ontology MCP Server
 
-A symbolic reasoning engine that provides ontological data about symbols via the Model Context Protocol (MCP).
-
-## Purpose
-
-This project implements a specialized MCP server that focuses on providing structured symbolic data for use in applications that work with dreams, mythology, and archetypes. It acts as a "source of truth" for symbolic meaning and relationships, allowing MCP clients to retrieve accurate symbolic information.
+A symbolic reasoning engine built in Rust that serves as an MCP-compliant server for dream and symbolic ontology.
 
 ## Architecture
 
-The Dream Ontology MCP Server follows a clean, layered architecture:
+The Dream Ontology project consists of two separate components in this repository:
 
-- **Domain Layer**: Core business logic and entities (Symbol, SymbolSet)
-- **Repository Layer**: Data access interfaces and implementations
-- **API Layer**: HTTP endpoints powered by Axum
-- **MCP Layer**: Protocol handlers adhering to the MCP specification
+1. **REST API Server**: Provides HTTP endpoints for accessing the symbol ontology
+2. **MCP Server**: Implements the Model Context Protocol for integration with LLM agents
 
-### Key Components
+This separation follows the architecture described in [docs/architecture/architecture.md](docs/architecture/architecture.md), allowing both traditional API access and MCP-based integration.
 
-- **Axum Web Framework**: Powers the HTTP API and MCP endpoints
-- **RMCP SDK**: Rust implementation of the MCP protocol
-- **In-memory Repository**: Stores and retrieves symbolic data (with PostgreSQL option for production)
-- **Tower Middleware**: Provides robust request processing and testing capabilities
-
-## Separation of Concerns
-
-This repository implements **only the symbolic data server** component. The LLM integration for symbolic interpretation is implemented in a separate MCP client service. This intentional separation follows best practices for MCP implementations:
-
-1. **This repository (MCP Server)**:
-
-   - Provides accurate symbolic data via MCP methods
-   - Acts as the "source of truth" for ontological information
-   - Focuses on data integrity, performance, and MCP protocol compliance
-
-2. **Separate MCP Client (not in this repo)**:
-   - Consumes data from this MCP server
-   - Handles LLM integration via OpenRouter
-   - Implements prompt engineering and interpretation
-   - Manages the actual dream interpretation logic
-
-This separation allows each service to excel at its specific responsibility while maintaining a clean architecture.
+```
+┌─────────────────────┐               ┌─────────────────────┐
+│                     │               │                     │
+│   REST API Server   │◄─────────────►│   Symbol Database   │
+│   (src/main.rs)     │               │                     │
+└─────────────────────┘               └─────────────────────┘
+                                              ▲
+                                              │
+                                              │
+┌─────────────────────┐                       │
+│                     │                       │
+│   MCP Server        │◄──────────────────────┘
+│   (src/bin/mcp_server.rs)│
+└─────────────────────┘
+```
 
 ## Getting Started
 
-[Instructions to be added]
+### Prerequisites
 
-## Project Status
+- Rust 1.65 or higher
+- Cargo
 
-This project is currently in active development. See [updated-checklist.md](updated-checklist.md) for current status and roadmap.
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/dream-ontology-mcp.git
+cd dream-ontology-mcp
+
+# Build the project
+cargo build
+```
+
+## Running the Services
+
+### REST API Server
+
+The REST API server provides HTTP endpoints for accessing the symbol ontology:
+
+```bash
+# Run the API server
+cargo run
+
+# The server will start at http://127.0.0.1:3000
+```
+
+Available endpoints:
+
+- `GET /health` - Health check endpoint
+- `GET /symbols` - List all symbols
+- `GET /symbols/{id}` - Get a specific symbol by ID
+
+### MCP Server
+
+The MCP server implements the Model Context Protocol for integration with LLM agents:
+
+```bash
+# Run the MCP server
+cargo run --bin mcp_server
+
+# The server will start at http://127.0.0.1:3001
+```
+
+Available MCP tools:
+
+- `get_symbols` - Get symbols from the ontology with optional filtering
+- More tools coming soon!
+
+### Running Both Services
+
+For development, you can run both services simultaneously:
+
+```bash
+# In one terminal
+cargo run
+
+# In another terminal
+cargo run --bin mcp_server
+```
+
+## Testing
+
+```bash
+# Run all tests
+cargo test
+
+# Run tests for a specific module
+cargo test domain::symbols
+```
+
+## MCP Integration
+
+The MCP server can be used with Claude Desktop or any other MCP-compatible client.
+
+To configure Claude Desktop to use this server:
+
+1. Add this to your `claude_desktop_config.json`:
+
+```json
+{
+  "tool_servers": [
+    {
+      "name": "DreamOntology",
+      "transport": {
+        "type": "sse",
+        "url": "http://localhost:3001"
+      }
+    }
+  ]
+}
+```
 
 ## License
 
-[License information to be added]
+This project is licensed under the MIT License - see the LICENSE file for details.
