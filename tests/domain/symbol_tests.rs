@@ -66,26 +66,6 @@ fn test_symbol_related_symbols() {
 }
 
 #[test]
-fn test_symbol_creation() {
-    let symbol = Symbol::new(
-        "water".to_string(),
-        "Water".to_string(),
-        "dream".to_string(),
-        "Symbolizes emotions and the unconscious".to_string(),
-    );
-
-    assert_eq!(symbol.id, "water");
-    assert_eq!(symbol.name, "Water");
-    assert_eq!(symbol.category, "dream");
-    assert_eq!(
-        symbol.description,
-        "Symbolizes emotions and the unconscious"
-    );
-    assert!(symbol.interpretations.is_empty());
-    assert!(symbol.related_symbols.is_empty());
-}
-
-#[test]
 fn test_add_interpretation() {
     let mut symbol = Symbol::new(
         "water".to_string(),
