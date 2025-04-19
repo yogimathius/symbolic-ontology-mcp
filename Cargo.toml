@@ -17,6 +17,7 @@ anyhow = "1.0.98"
 async-trait = "0.1.88"
 axum = "0.8.3"
 axum-macros = "0.5.0"
+reqwest = { version = "0.12.15", features = ["json"] }
 rmcp = { version = "0.1.5", features = ["server", "transport-sse-server"] }
 serde = "1.0.219"
 serde_json = { version = "1.0.140", features = ["preserve_order"] }
@@ -24,6 +25,9 @@ tokio = { version = "1.44.2", features = ["full", "macros"] }
 tower-http = { version = "0.6.2", features = ["trace"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+# Database dependencies
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "json", "uuid", "time"] }
+pgvector = { version = "0.4", features = ["sqlx"] }
 
 [dev-dependencies]
 hyper = { version = "1.6.0", features = ["full"] }
