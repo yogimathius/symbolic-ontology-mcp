@@ -1,6 +1,5 @@
-use axum::Router;
 use axum::body::Body;
-use axum::http::{Request, StatusCode};
+use axum::http::Request;
 use std::time::Duration;
 use tower_http::classify::{ServerErrorsAsFailures, SharedClassifier};
 use tower_http::trace::{self, TraceLayer};

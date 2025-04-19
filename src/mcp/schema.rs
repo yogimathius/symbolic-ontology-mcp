@@ -63,7 +63,7 @@ pub struct SymbolDTO {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::{self, json};
+    use serde_json::{self};
 
     #[test]
     fn test_get_symbols_params_serialization() {
