@@ -2,8 +2,8 @@
 
 # Dream Ontology MCP API Test Script
 
-API_HOST=${API_HOST:-"localhost:3000"}
-MCP_HOST=${MCP_HOST:-"localhost:3001"}
+API_HOST=${API_HOST:-"localhost:3001"}
+MCP_HOST=${MCP_HOST:-"localhost:3002"}
 
 # Set colors for output
 GREEN='\033[0;32m'
@@ -73,16 +73,6 @@ get_symbol() {
     local id=${1:-"water"}
     print_test "Get Symbol by ID: $id"
     curl -s -X GET http://$API_HOST/symbols/$id | jq
-}
-
-# Request interpretation
-interpret_symbol() {
-    local id=${1:-"water"}
-    local context=${2:-"recurring dream"}
-    local query=${3:-"What might this symbolize?"}
-    print_test "Symbol Interpretation: ID=$id, Context=$context"
-    curl -s -X POST http://$API_HOST/interpret -H "Content-Type: application/json" \
-        -d "{\"symbol_id\": \"$id\", \"context\": \"$context\", \"query\": \"$query\"}" | jq
 }
 
 # MCP get_symbols test
@@ -164,7 +154,7 @@ test_invalid_params() {
 
 # Run all tests
 run_all_tests() {
-    print_header "API Tests"
+    print_header "API Tests with API_HOST=$API_HOST"
     test_health
     list_all_symbols
     list_symbols_limit
@@ -172,7 +162,6 @@ run_all_tests() {
     search_symbols
     combined_filter
     get_symbol
-    interpret_symbol
     
     print_header "MCP Tests"
     mcp_get_symbols
