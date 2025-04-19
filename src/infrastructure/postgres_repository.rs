@@ -8,7 +8,7 @@ use sqlx::{PgPool, Row, postgres::PgPoolOptions};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{debug, error, info};
+use tracing::info;
 
 /// PostgreSQL implementation of the repositories
 pub struct PostgresRepositoryFactory {
@@ -584,12 +584,18 @@ impl SymbolSetRepository for PostgresSymbolSetRepository {
 }
 
 /// Extended repository trait that can be added later for vector search
+/// Currently unused but will be implemented in future versions for similarity search
+#[allow(dead_code)]
 pub trait VectorSymbolRepository: SymbolRepository {
     /// Set an embedding vector for a symbol
-    async fn set_symbol_embedding(&self, id: &str, embedding: Vec<f32>) -> RepositoryResult<()>;
+    fn set_symbol_embedding(
+        &self,
+        id: &str,
+        embedding: Vec<f32>,
+    ) -> impl std::future::Future<Output = RepositoryResult<()>> + Send;
 
     /// Find symbols similar to the provided embedding vector
-    async fn find_similar_symbols(
+    fn find_similar_symbols(
         &self,
         embedding: &[f32],
         limit: usize,
