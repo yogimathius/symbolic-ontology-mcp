@@ -20,8 +20,10 @@ pub enum ApiError {
     /// Internal server error (500)
     Internal(String),
     /// Unauthorized (401)
+    #[allow(dead_code)]
     Unauthorized(String),
     /// Forbidden (403)
+    #[allow(dead_code)]
     Forbidden(String),
 }
 
@@ -89,7 +91,7 @@ impl From<RepositoryError> for ApiError {
 /// - HTTP Status Codes: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 impl From<crate::mcp::methods::get_symbols::RmcpError> for ApiError {
     fn from(err: crate::mcp::methods::get_symbols::RmcpError) -> Self {
-        use crate::mcp::methods::get_symbols::{RmcpError, RmcpErrorCode};
+        use crate::mcp::methods::get_symbols::RmcpError;
 
         match err {
             // Invalid params in JSON-RPC (-32602) maps to HTTP 400 Bad Request
