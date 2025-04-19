@@ -2,8 +2,6 @@ use std::env;
 use std::net::SocketAddr;
 use std::str::FromStr;
 
-use tracing::info;
-
 /// Configuration for the application, loaded from environment variables
 #[derive(Debug, Clone)]
 pub struct Config {
