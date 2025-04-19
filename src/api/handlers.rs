@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -21,7 +21,7 @@ pub struct SymbolsResponse {
 }
 
 /// Query parameters for listing symbols
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 pub struct ListSymbolsQuery {
     pub category: Option<String>,
     pub query: Option<String>,
@@ -34,10 +34,18 @@ fn default_limit() -> usize {
     50 // Default to 50 symbols
 }
 
-/// List all symbols with optional filtering
+/// List all symbols with optional filtering - Query parameter version
 pub async fn list_symbols(
     State(repository): State<Arc<dyn SymbolRepository>>,
-    Json(params): Json<ListSymbolsQuery>,
+    Query(params): Query<ListSymbolsQuery>,
+) -> ApiResult<Json<SymbolsResponse>> {
+    process_list_symbols(repository, params).await
+}
+
+/// Process the list_symbols request with the given parameters
+async fn process_list_symbols(
+    repository: Arc<dyn SymbolRepository>,
+    params: ListSymbolsQuery,
 ) -> ApiResult<Json<SymbolsResponse>> {
     // Validate input parameters
     if let Some(ref query) = params.query {
@@ -99,34 +107,48 @@ pub struct InterpretRequest {
 /// Response for symbol interpretation
 #[derive(Serialize)]
 pub struct InterpretResponse {
-    pub symbol_id: String,
-    pub context: Option<String>,
+    pub symbol: Symbol,
     pub interpretation: String,
 }
 
-/// Validate an interpretation request
+/// Validate an interpret request
 fn validate_interpret_request(request: &InterpretRequest) -> Result<(), ApiError> {
     if request.symbol_id.trim().is_empty() {
         return Err(ApiError::BadRequest(
             "Symbol ID cannot be empty".to_string(),
         ));
     }
-
-    // If context is provided, it shouldn't be empty
-    if let Some(ref context) = request.context {
-        if context.trim().is_empty() {
-            return Err(ApiError::BadRequest("Context cannot be empty".to_string()));
-        }
-    }
-
-    // If query is provided, it shouldn't be empty
-    if let Some(ref query) = request.query {
-        if query.trim().is_empty() {
-            return Err(ApiError::BadRequest("Query cannot be empty".to_string()));
-        }
-    }
-
     Ok(())
+}
+
+/// Interpret a symbol in a given context
+pub async fn interpret_symbol(
+    State(repository): State<Arc<dyn SymbolRepository>>,
+    Json(request): Json<InterpretRequest>,
+) -> ApiResult<Json<InterpretResponse>> {
+    // Validate request
+    validate_interpret_request(&request)?;
+
+    // Get the symbol from repository
+    let symbol = repository.get_symbol(&request.symbol_id).await?;
+
+    // For now, we'll return a simple interpretation - this would be enhanced
+    // with the LLM integration in the future
+    let interpretation = match &request.context {
+        Some(context) => format!(
+            "Symbol interpretation for '{}' in context '{}': {}",
+            symbol.name, context, symbol.description
+        ),
+        None => format!(
+            "General interpretation for '{}': {}",
+            symbol.name, symbol.description
+        ),
+    };
+
+    Ok(Json(InterpretResponse {
+        symbol,
+        interpretation,
+    }))
 }
 
 #[cfg(test)]
@@ -173,7 +195,7 @@ mod tests {
             limit: 10,
         };
 
-        let result = list_symbols(State(repository.clone()), Json(params)).await;
+        let result = list_symbols(State(repository.clone()), Query(params)).await;
 
         assert!(result.is_ok());
         let response = result.unwrap().0; // Extract from Json wrapper

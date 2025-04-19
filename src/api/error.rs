@@ -51,12 +51,11 @@ impl IntoResponse for ApiError {
             ApiError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
         };
 
-        // Create a JSON response body with error details
+        // Create a JSON response body with error details that matches Axum's default error format
         let body = Json(json!({
-            "error": {
-                "type": status.canonical_reason(),
-                "message": message,
-            }
+            "statusCode": status.as_u16(),
+            "error": status.canonical_reason().unwrap_or("Unknown"),
+            "message": message,
         }));
 
         // Combine the status code and body
