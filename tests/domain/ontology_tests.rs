@@ -1,4 +1,4 @@
-use dream_ontology_mcp::domain::Symbol;
+use dream_ontology_mcp::domain::{Symbol, SymbolSet};
 
 fn create_test_symbol(id: &str, name: &str, category: &str) -> Symbol {
     Symbol::new(
