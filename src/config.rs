@@ -35,19 +35,14 @@ impl Config {
             .ok()
             .and_then(|addr| SocketAddr::from_str(&addr).ok())
             .unwrap_or_else(|| SocketAddr::from(([127, 0, 0, 1], 3000)));
-        println!("SERVER_ADDR parsed as: {}", server_addr);
 
         let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
-        println!("LOG_LEVEL parsed as: {}", log_level);
 
         let use_memory_str = env::var("USE_MEMORY_REPOSITORY").unwrap_or_default();
-        println!("USE_MEMORY_REPOSITORY raw value: {}", use_memory_str);
         let use_memory_repository =
             use_memory_str.to_lowercase() == "true" || use_memory_str == "1";
-        println!("USE_MEMORY_REPOSITORY parsed as: {}", use_memory_repository);
 
         let database_url = env::var("DATABASE_URL").ok();
-        println!("DATABASE_URL parsed as: {:?}", database_url);
 
         Self {
             server_addr,

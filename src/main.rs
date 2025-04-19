@@ -52,12 +52,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::env::var("USE_MEMORY_REPOSITORY").unwrap_or_else(|_| "not set".to_string());
     let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "not set".to_string());
 
-    println!("Environment variables before config parsing:");
-    println!("SERVER_ADDR={}", server_addr);
-    println!("LOG_LEVEL={}", log_level);
-    println!("USE_MEMORY_REPOSITORY={}", use_memory);
-    println!("DATABASE_URL={}", db_url);
-
     match dot_env_result {
         Ok(path) => println!("Loaded .env from {}", path.display()),
         Err(e) => println!("Could not load .env file: {}", e),
@@ -74,10 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         utils::version()
     );
 
-    // Log the configuration
-    debug!("Parsed configuration: {:?}", config);
-
-    info!("Loaded configuration: {:?}", config);
+    debug!("Loaded configuration: {:?}", config);
 
     // Initialize repositories based on configuration
     let symbol_repository = if !config.use_memory_repository {
