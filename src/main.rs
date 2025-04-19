@@ -45,13 +45,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load .env file if present
     let dot_env_result = dotenvy::dotenv();
 
-    // Debug environment variables - Use println for now before tracing is initialized
-    let server_addr = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "not set".to_string());
-    let log_level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "not set".to_string());
-    let use_memory =
-        std::env::var("USE_MEMORY_REPOSITORY").unwrap_or_else(|_| "not set".to_string());
-    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "not set".to_string());
-
     match dot_env_result {
         Ok(path) => println!("Loaded .env from {}", path.display()),
         Err(e) => println!("Could not load .env file: {}", e),
