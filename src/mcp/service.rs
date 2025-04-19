@@ -1,7 +1,7 @@
 use rmcp::{ServerHandler, model::*, tool};
 use std::sync::Arc;
 
-use crate::domain::{Symbol, SymbolRepository};
+use crate::domain::SymbolRepository;
 use crate::mcp::schema::GetSymbolsParams;
 
 #[derive(Clone)]
@@ -11,6 +11,7 @@ pub struct SymbolService {
 
 #[tool(tool_box)]
 impl SymbolService {
+    #[allow(dead_code)]
     pub fn new(repository: Arc<dyn SymbolRepository>) -> Self {
         Self { repository }
     }

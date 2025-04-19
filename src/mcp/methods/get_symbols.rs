@@ -4,11 +4,12 @@ use std::error::Error as StdError;
 use std::fmt;
 use std::sync::Arc;
 
-use crate::domain::{RepositoryError, RepositoryFactory, Symbol, SymbolRepository};
+use crate::domain::{RepositoryError, Symbol, SymbolRepository};
 use crate::mcp::schema::{GetSymbolsParams, GetSymbolsResponse, SymbolDTO};
 
 /// Handler trait definition
 #[async_trait]
+#[allow(dead_code)]
 pub trait Handler: Send + Sync {
     fn method_name(&self) -> &str;
 
@@ -16,6 +17,7 @@ pub trait Handler: Send + Sync {
 }
 
 /// MethodCall structure
+#[allow(dead_code)]
 pub struct MethodCall {
     pub id: String,
     pub method: String,
@@ -43,6 +45,7 @@ impl MethodCall {
 /// - -32000 to -32099: Reserved for implementation-defined server errors
 /// - Client-defined codes may be used for custom errors (not used here)
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub enum RmcpErrorCode {
     /// -32600: Invalid request - The JSON sent is not a valid Request object
     /// as defined in the JSON-RPC 2.0 specification
@@ -72,6 +75,7 @@ pub enum RmcpErrorCode {
 
 impl RmcpErrorCode {
     /// Get the numeric code for this error
+    #[allow(dead_code)]
     pub fn code(&self) -> i32 {
         match self {
             Self::InvalidRequest => -32600,
@@ -85,6 +89,7 @@ impl RmcpErrorCode {
     }
 
     /// Get a string representation of this error code
+    #[allow(dead_code)]
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::InvalidRequest => "Invalid request",
@@ -106,6 +111,7 @@ pub enum RmcpError {
     /// Error from the repository layer
     RepositoryError(String),
     /// Other errors
+    #[allow(dead_code)]
     Other(String),
 }
 
@@ -123,6 +129,7 @@ impl StdError for RmcpError {}
 
 impl RmcpError {
     /// Get the error code for this error
+    #[allow(dead_code)]
     pub fn error_code(&self) -> RmcpErrorCode {
         match self {
             Self::ParseError(_) => RmcpErrorCode::InvalidParams,
@@ -135,6 +142,7 @@ impl RmcpError {
     ///
     /// This creates a standard JSON-RPC 2.0 error response following the specification:
     /// https://www.jsonrpc.org/specification#error_object
+    #[allow(dead_code)]
     pub fn to_jsonrpc_error(&self, id: &str) -> serde_json::Value {
         let code = self.error_code();
         serde_json::json!({
@@ -182,6 +190,7 @@ pub struct GetSymbolsHandler {
 
 impl GetSymbolsHandler {
     /// Create a new handler with the provided repository
+    #[allow(dead_code)]
     pub fn new(symbol_repository: Arc<dyn SymbolRepository>) -> Self {
         GetSymbolsHandler { symbol_repository }
     }
@@ -236,6 +245,7 @@ impl Handler for GetSymbolsHandler {
 }
 
 /// Factory function to create the get_symbols handler with provided repository
+#[allow(dead_code)]
 pub fn get_symbols(symbol_repository: Arc<dyn SymbolRepository>) -> GetSymbolsHandler {
     GetSymbolsHandler::new(symbol_repository)
 }
@@ -243,7 +253,9 @@ pub fn get_symbols(symbol_repository: Arc<dyn SymbolRepository>) -> GetSymbolsHa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::infrastructure::memory_repository::MemoryRepositoryFactory;
+    use crate::{
+        domain::RepositoryFactory, infrastructure::memory_repository::MemoryRepositoryFactory,
+    };
     use serde_json::json;
 
     #[tokio::test]
