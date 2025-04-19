@@ -1,14 +1,10 @@
-use std::net::SocketAddr;
-use std::sync::Arc;
-
-use axum::serve;
 use tokio::net::TcpListener;
 use tracing::{debug, info};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::config::Config;
 use crate::domain::RepositoryFactory;
 use crate::infrastructure::memory_repository::MemoryRepositoryFactory;
+use crate::infrastructure::postgres_repository::PostgresRepositoryFactory;
 use crate::logging::{init_tracing, trace_layer};
 
 /// API module containing HTTP endpoints and request handlers
@@ -46,6 +42,27 @@ mod utils;
 /// on providing accurate symbolic data as an MCP server.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load .env file if present
+    let dot_env_result = dotenvy::dotenv();
+
+    // Debug environment variables - Use println for now before tracing is initialized
+    let server_addr = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "not set".to_string());
+    let log_level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "not set".to_string());
+    let use_memory =
+        std::env::var("USE_MEMORY_REPOSITORY").unwrap_or_else(|_| "not set".to_string());
+    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "not set".to_string());
+
+    println!("Environment variables before config parsing:");
+    println!("SERVER_ADDR={}", server_addr);
+    println!("LOG_LEVEL={}", log_level);
+    println!("USE_MEMORY_REPOSITORY={}", use_memory);
+    println!("DATABASE_URL={}", db_url);
+
+    match dot_env_result {
+        Ok(path) => println!("Loaded .env from {}", path.display()),
+        Err(e) => println!("Could not load .env file: {}", e),
+    }
+
     // Load configuration from environment
     let config = Config::from_env();
 
@@ -57,25 +74,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         utils::version()
     );
 
-    debug!(?config, "Loaded configuration");
+    // Log the configuration
+    debug!("Parsed configuration: {:?}", config);
+
+    info!("Loaded configuration: {:?}", config);
 
     // Initialize repositories based on configuration
-    let repo_factory = if config.use_memory_repository {
-        info!("Using in-memory repository with test data");
-        MemoryRepositoryFactory::new().with_test_data()
+    let symbol_repository = if !config.use_memory_repository {
+        if let Some(db_url) = &config.database_url {
+            info!("Using PostgreSQL repository");
+            // Connect to PostgreSQL and create repository factory
+            let pg_factory = PostgresRepositoryFactory::new(db_url)
+                .await?
+                .with_test_data()
+                .await?;
+            pg_factory.create_symbol_repository()
+        } else {
+            info!("No database URL provided, falling back to in-memory repository with test data");
+            let memory_factory = MemoryRepositoryFactory::new().with_test_data();
+            memory_factory.create_symbol_repository()
+        }
     } else {
-        // In the future, we could add other repository implementations here
-        info!("Using in-memory repository (default)");
-        MemoryRepositoryFactory::new().with_test_data()
+        info!("Using in-memory repository with test data");
+        let memory_factory = MemoryRepositoryFactory::new().with_test_data();
+        memory_factory.create_symbol_repository()
     };
-
-    let symbol_repository = repo_factory.create_symbol_repository();
 
     // Create the API router with repository dependency and logging middleware
     let app = api::router(symbol_repository.clone()).layer(trace_layer());
 
-    // TODO: Initialize MCP server with method handlers
-    // using the same repository
     debug!("API Server initialized with symbol repository and logging middleware");
 
     // Start HTTP server
