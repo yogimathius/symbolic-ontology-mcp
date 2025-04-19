@@ -10,7 +10,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 #[derive(Parser, Debug)]
 struct Args {
     /// Port to bind the server to
-    #[clap(short, long, default_value = "3001")]
+    #[clap(short, long, default_value = "3002")]
     port: u16,
 }
 
