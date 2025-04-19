@@ -42,6 +42,38 @@ struct DictionaryOfDreamsRow {
     category: Option<String>,
 }
 
+// New struct for dreams_interpretations.csv
+#[derive(Debug, Deserialize)]
+struct DreamsInterpretationsRow {
+    #[serde(rename = "Dream Symbol")]
+    symbol: Option<String>,
+    #[serde(rename = "Interpretation")]
+    interpretation: Option<String>,
+}
+
+// New struct for cleaned_dream_interpretations.csv and dream_interpretations_words.csv
+#[derive(Debug, Deserialize)]
+struct CleanedDreamInterpretationsRow {
+    #[serde(rename = "Alphabet")]
+    alphabet: Option<String>,
+    #[serde(rename = "Word")]
+    word: Option<String>,
+    #[serde(rename = "Interpretation")]
+    interpretation: Option<String>,
+}
+
+// After the CleanedDreamInterpretationsRow struct, add a new struct for sample_dream_symbols.csv
+// New struct for sample_dream_symbols.csv
+#[derive(Debug, Deserialize)]
+struct SampleDreamSymbolRow {
+    #[serde(rename = "Symbol")]
+    symbol: Option<String>,
+    #[serde(rename = "Interpretation")]
+    interpretation: Option<String>,
+    #[serde(rename = "Description")]
+    description: Option<String>,
+}
+
 // Download a file from URL
 async fn download_file(url: &str, output_path: &Path) -> Result<(), Box<dyn Error>> {
     println!("Downloading from: {}", url);
@@ -250,6 +282,124 @@ async fn process_files_and_seed(
                     }
                 }
             }
+        } else if path_str.contains("dreams_interpretations") {
+            let records: Vec<DreamsInterpretationsRow> = match read_csv_file(&path) {
+                Ok(records) => records,
+                Err(err) => {
+                    eprintln!("Error reading CSV file {}: {}", path_str, err);
+                    continue;
+                }
+            };
+
+            for record in records {
+                if let (Some(symbol_name), Some(interpretation)) =
+                    (record.symbol, record.interpretation)
+                {
+                    if symbol_name.trim().is_empty() || interpretation.trim().is_empty() {
+                        continue;
+                    }
+
+                    let symbol_key = symbol_name.to_lowercase();
+                    if processed_symbols.contains(&symbol_key) {
+                        continue;
+                    }
+
+                    let symbol = row_to_symbol(&symbol_name, &interpretation, None);
+
+                    match symbol_repo.create_symbol(symbol).await {
+                        Ok(_) => {
+                            processed_symbols.insert(symbol_key);
+                            success_count += 1;
+                            if success_count % 100 == 0 {
+                                println!("Processed {} symbols...", success_count);
+                            }
+                        }
+                        Err(err) => {
+                            eprintln!("Error creating symbol {}: {}", symbol_name, err);
+                            error_count += 1;
+                        }
+                    }
+                }
+            }
+        } else if path_str.contains("cleaned_dream_interpretations")
+            || path_str.contains("dream_interpretations_words")
+        {
+            let records: Vec<CleanedDreamInterpretationsRow> = match read_csv_file(&path) {
+                Ok(records) => records,
+                Err(err) => {
+                    eprintln!("Error reading CSV file {}: {}", path_str, err);
+                    continue;
+                }
+            };
+
+            for record in records {
+                if let (Some(word), Some(interpretation)) = (record.word, record.interpretation) {
+                    if word.trim().is_empty() || interpretation.trim().is_empty() {
+                        continue;
+                    }
+
+                    let symbol_key = word.to_lowercase();
+                    if processed_symbols.contains(&symbol_key) {
+                        continue;
+                    }
+
+                    let symbol = row_to_symbol(&word, &interpretation, None);
+
+                    match symbol_repo.create_symbol(symbol).await {
+                        Ok(_) => {
+                            processed_symbols.insert(symbol_key);
+                            success_count += 1;
+                            if success_count % 100 == 0 {
+                                println!("Processed {} symbols...", success_count);
+                            }
+                        }
+                        Err(err) => {
+                            eprintln!("Error creating symbol {}: {}", word, err);
+                            error_count += 1;
+                        }
+                    }
+                }
+            }
+        } else if path_str.contains("sample_dream_symbols") {
+            let records: Vec<SampleDreamSymbolRow> = match read_csv_file(&path) {
+                Ok(records) => records,
+                Err(err) => {
+                    eprintln!("Error reading CSV file {}: {}", path_str, err);
+                    continue;
+                }
+            };
+
+            for record in records {
+                if let (Some(symbol_name), Some(interpretation)) =
+                    (record.symbol, record.interpretation)
+                {
+                    if symbol_name.trim().is_empty() || interpretation.trim().is_empty() {
+                        continue;
+                    }
+
+                    let symbol_key = symbol_name.to_lowercase();
+                    if processed_symbols.contains(&symbol_key) {
+                        continue;
+                    }
+
+                    let symbol =
+                        row_to_symbol(&symbol_name, &interpretation, record.description.as_deref());
+
+                    match symbol_repo.create_symbol(symbol).await {
+                        Ok(_) => {
+                            processed_symbols.insert(symbol_key);
+                            success_count += 1;
+                            if success_count % 100 == 0 {
+                                println!("Processed {} symbols...", success_count);
+                            }
+                        }
+                        Err(err) => {
+                            eprintln!("Error creating symbol {}: {}", symbol_name, err);
+                            error_count += 1;
+                        }
+                    }
+                }
+            }
         } else {
             eprintln!("Unknown file format: {}", path_str);
         }
@@ -276,11 +426,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let urls = [
         // Note: These are examples. You'll need to replace with actual download links
         (
-            "https://storage.googleapis.com/kaggle-datasets-public/yuvrajsanghai/dream-dictionary/archive.zip",
+            "https://www.kaggle.com/api/v1/datasets/download/yuvrajsanghai/dream-dictionary",
             "dream-dictionary.zip",
         ),
         (
-            "https://storage.googleapis.com/kaggle-datasets-public/manswad/dictionary-of-dreams/archive.zip",
+            "https://www.kaggle.com/api/v1/datasets/download/manswad/dictionary-of-dreams",
             "dictionary-of-dreams.zip",
         ),
     ];
@@ -304,6 +454,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         // Clean up the zip file
         fs::remove_file(zip_path)?;
+    }
+
+    // Add existing CSV files in the data directory
+    for entry in fs::read_dir(&data_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.extension().map_or(false, |ext| ext == "csv") {
+            csv_files.push(path);
+        }
     }
 
     // Process the CSV files and seed the database
