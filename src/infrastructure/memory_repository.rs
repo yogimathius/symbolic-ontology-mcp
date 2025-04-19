@@ -4,20 +4,24 @@ use crate::domain::{
 };
 use async_trait;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 
 /// Generic repository trait for basic CRUD operations
 pub trait Repository<K, V> {
     /// Get an item by its key
+    #[allow(dead_code)]
     fn get(&self, key: &K) -> Result<Option<V>, RepositoryError>;
 
     /// Save an item with the given key
+    #[allow(dead_code)]
     fn save(&self, key: K, value: V) -> Result<(), RepositoryError>;
 
     /// Delete an item by its key, returns true if item was deleted
+    #[allow(dead_code)]
     fn delete(&self, key: &K) -> Result<bool, RepositoryError>;
 
     /// List all items as key-value pairs
+    #[allow(dead_code)]
     fn list(&self) -> Result<Vec<(K, V)>, RepositoryError>;
 }
 
@@ -330,7 +334,7 @@ impl SymbolSetRepository for MemorySymbolSetRepository {
 /// An in-memory implementation of the Repository trait.
 /// This is primarily useful for testing and prototyping.
 pub struct MemoryRepository<K, V> {
-    data: Arc<Mutex<HashMap<K, V>>>,
+    data: Arc<RwLock<HashMap<K, V>>>,
 }
 
 impl<K, V> MemoryRepository<K, V>
@@ -338,17 +342,19 @@ where
     K: Clone + Eq + std::hash::Hash,
     V: Clone,
 {
-    /// Create a new empty memory repository
+    /// Create a new empty repository
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
-            data: Arc::new(Mutex::new(HashMap::new())),
+            data: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
-    /// Create a memory repository with initial data
+    /// Create a repository with initial data
+    #[allow(dead_code)]
     pub fn with_data(initial_data: HashMap<K, V>) -> Self {
         Self {
-            data: Arc::new(Mutex::new(initial_data)),
+            data: Arc::new(RwLock::new(initial_data)),
         }
     }
 }
@@ -359,7 +365,7 @@ where
     V: Clone,
 {
     fn get(&self, key: &K) -> Result<Option<V>, RepositoryError> {
-        match self.data.lock() {
+        match self.data.read() {
             Ok(data) => Ok(data.get(key).cloned()),
             Err(_) => Err(RepositoryError::Internal(
                 "Failed to acquire lock".to_string(),
@@ -368,7 +374,7 @@ where
     }
 
     fn save(&self, key: K, value: V) -> Result<(), RepositoryError> {
-        match self.data.lock() {
+        match self.data.write() {
             Ok(mut data) => {
                 data.insert(key, value);
                 Ok(())
@@ -380,7 +386,7 @@ where
     }
 
     fn delete(&self, key: &K) -> Result<bool, RepositoryError> {
-        match self.data.lock() {
+        match self.data.write() {
             Ok(mut data) => Ok(data.remove(key).is_some()),
             Err(_) => Err(RepositoryError::Internal(
                 "Failed to acquire lock".to_string(),
@@ -389,7 +395,7 @@ where
     }
 
     fn list(&self) -> Result<Vec<(K, V)>, RepositoryError> {
-        match self.data.lock() {
+        match self.data.read() {
             Ok(data) => {
                 let items = data.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
                 Ok(items)
