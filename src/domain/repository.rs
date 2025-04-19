@@ -28,6 +28,23 @@ impl Display for RepositoryError {
     }
 }
 
+// Add From implementation for sqlx::Error
+impl From<sqlx::Error> for RepositoryError {
+    fn from(error: sqlx::Error) -> Self {
+        match error {
+            sqlx::Error::RowNotFound => RepositoryError::NotFound("Entity not found".to_string()),
+            _ => RepositoryError::Internal(format!("Database error: {}", error)),
+        }
+    }
+}
+
+// Add From implementation for serde_json::Error
+impl From<serde_json::Error> for RepositoryError {
+    fn from(error: serde_json::Error) -> Self {
+        RepositoryError::Internal(format!("JSON serialization error: {}", error))
+    }
+}
+
 impl Error for RepositoryError {}
 
 pub type RepositoryResult<T> = Result<T, RepositoryError>;
