@@ -101,7 +101,6 @@ pub async fn get_symbol(
 pub struct InterpretRequest {
     pub symbol_id: String,
     pub context: Option<String>,
-    pub query: Option<String>,
 }
 
 /// Response for symbol interpretation
