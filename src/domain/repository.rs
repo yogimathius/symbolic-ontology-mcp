@@ -65,14 +65,17 @@ pub trait SymbolRepository: Send + Sync {
     async fn create_symbol(&self, symbol: Symbol) -> RepositoryResult<Symbol>;
 
     /// Update an existing symbol
+    #[allow(dead_code)]
     async fn update_symbol(&self, symbol: Symbol) -> RepositoryResult<Symbol>;
 
     /// Delete a symbol by its ID
+    #[allow(dead_code)]
     async fn delete_symbol(&self, id: &str) -> RepositoryResult<()>;
 }
 
 /// Repository trait for SymbolSet entities
 #[async_trait]
+#[allow(dead_code)]
 pub trait SymbolSetRepository: Send + Sync {
     /// Get a symbol set by its ID
     async fn get_symbol_set(&self, id: &str) -> RepositoryResult<SymbolSet>;
@@ -99,5 +102,6 @@ pub trait RepositoryFactory {
     fn create_symbol_repository(&self) -> Arc<dyn SymbolRepository>;
 
     /// Create a new symbol set repository
+    #[allow(dead_code)]
     fn create_symbol_set_repository(&self) -> Arc<dyn SymbolSetRepository>;
 }

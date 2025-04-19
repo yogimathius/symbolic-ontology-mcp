@@ -54,33 +54,38 @@ impl SymbolSet {
     }
 
     /// Add a symbol to the set
-    pub fn add_symbol(&mut self, symbol: Symbol) -> Option<Symbol> {
-        self.symbols.insert(symbol.id.clone(), symbol)
+    pub fn add_symbol(&mut self, symbol: Symbol) {
+        self.symbols.insert(symbol.id.clone(), symbol);
     }
 
-    /// Get a symbol by ID
+    /// Get a symbol from the set by its ID
+    #[allow(dead_code)]
     pub fn get_symbol(&self, id: &str) -> Option<&Symbol> {
         self.symbols.get(id)
     }
 
-    /// Remove a symbol by ID
+    /// Remove a symbol from the set by its ID
+    #[allow(dead_code)]
     pub fn remove_symbol(&mut self, id: &str) -> Option<Symbol> {
         self.symbols.remove(id)
     }
 
-    /// Search for symbols matching a query in name or description
+    /// Search for symbols by query string
+    #[allow(dead_code)]
     pub fn search(&self, query: &str) -> Vec<&Symbol> {
         let query = query.to_lowercase();
         self.symbols
             .values()
             .filter(|s| {
-                s.name.to_lowercase().contains(&query)
+                s.id.to_lowercase().contains(&query)
+                    || s.name.to_lowercase().contains(&query)
                     || s.description.to_lowercase().contains(&query)
             })
             .collect()
     }
 
     /// Filter symbols by category
+    #[allow(dead_code)]
     pub fn filter_by_category(&self, category: &str) -> Vec<&Symbol> {
         self.symbols
             .values()
@@ -88,12 +93,14 @@ impl SymbolSet {
             .collect()
     }
 
-    /// Get all unique categories in this symbol set
+    /// Get all unique categories in this set
+    #[allow(dead_code)]
     pub fn get_categories(&self) -> HashSet<&str> {
         self.symbols.values().map(|s| s.category.as_str()).collect()
     }
 
-    /// Count the symbols in this set
+    /// Count the number of symbols in this set
+    #[allow(dead_code)]
     pub fn count(&self) -> usize {
         self.symbols.len()
     }

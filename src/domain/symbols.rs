@@ -54,14 +54,14 @@ impl Symbol {
     }
 
     /// Add an interpretation for a specific context
+    #[allow(dead_code)]
     pub fn add_interpretation(&mut self, context: String, interpretation: String) {
         self.interpretations.insert(context, interpretation);
     }
 
-    /// Add a related symbol by ID
+    /// Add a related symbol ID
+    #[allow(dead_code)]
     pub fn add_related_symbol(&mut self, symbol_id: String) {
-        if !self.related_symbols.contains(&symbol_id) {
-            self.related_symbols.push(symbol_id);
-        }
+        self.related_symbols.push(symbol_id);
     }
 }
