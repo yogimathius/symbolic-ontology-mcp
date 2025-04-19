@@ -33,6 +33,7 @@ This separation follows the architecture described in [docs/architecture/archite
 
 - Rust 1.65 or higher
 - Cargo
+- (Optional) Docker and Docker Compose for PostgreSQL setup
 
 ### Installation
 
@@ -44,6 +45,50 @@ cd dream-ontology-mcp
 # Build the project
 cargo build
 ```
+
+### Database Setup
+
+The Dream Ontology Server supports two storage backends:
+
+1. **In-Memory Repository**: Default option, good for development and testing
+2. **PostgreSQL with pgvector**: Production-ready option with vector embedding support
+
+#### Using the In-Memory Repository
+
+The in-memory repository is enabled by default and requires no additional setup.
+
+#### Using PostgreSQL with pgvector
+
+1. Start a PostgreSQL instance with pgvector using Docker Compose:
+
+```bash
+# Start PostgreSQL with pgvector
+docker-compose up -d
+```
+
+2. Configure the application to use PostgreSQL by editing `.env`:
+
+```
+# Set to "false" to use PostgreSQL
+USE_MEMORY_REPOSITORY=false
+
+# Uncomment the DATABASE_URL
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/symbol_ontology
+```
+
+The server will automatically:
+
+- Create the necessary tables on startup
+- Enable the pgvector extension
+- Seed test data (in development mode)
+
+#### Vector Embedding Support
+
+The PostgreSQL implementation includes support for vector embeddings:
+
+- Symbols can have 384-dimensional vector embeddings
+- Vector similarity search is available for finding related symbols
+- This follows the architecture in [docs/architecture/vector-db-architecture.md](docs/architecture/vector-db-architecture.md)
 
 ## Running the Services
 
@@ -122,6 +167,20 @@ To configure Claude Desktop to use this server:
     }
   ]
 }
+```
+
+## Database Seeder
+
+The project includes database seeding tools to populate your database with dream symbols from various datasets. For detailed instructions, see [README_SEEDER.md](README_SEEDER.md).
+
+Quick start:
+
+```bash
+# Seed with the sample dataset
+cargo run --bin manual_seed data/sample_dream_symbols.csv
+
+# Or seed with Kaggle datasets (after downloading)
+cargo run --bin manual_seed path/to/downloaded/csv
 ```
 
 ## License
