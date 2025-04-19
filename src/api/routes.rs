@@ -13,6 +13,8 @@ pub fn router(symbol_repository: Arc<dyn SymbolRepository>) -> Router {
         .route("/health", get(handlers::health_check))
         .route("/symbols", get(handlers::list_symbols))
         .route("/symbols/:id", get(handlers::get_symbol))
+        .route("/symbols/:id/related", get(handlers::get_related_symbols))
+        .route("/categories", get(handlers::get_categories))
         .route("/interpret", post(handlers::interpret_symbol))
         .with_state(symbol_repository)
 }

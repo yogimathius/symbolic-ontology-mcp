@@ -151,6 +151,87 @@ pub async fn interpret_symbol(
     }))
 }
 
+/// Response for related symbols
+#[derive(Serialize)]
+pub struct RelatedSymbolsResponse {
+    pub symbols: Vec<Symbol>,
+    pub total_count: usize,
+}
+
+/// Get all related symbols for a specific symbol ID
+pub async fn get_related_symbols(
+    Path(id): Path<String>,
+    State(repository): State<Arc<dyn SymbolRepository>>,
+) -> ApiResult<Json<RelatedSymbolsResponse>> {
+    // Validate ID
+    if id.trim().is_empty() {
+        return Err(ApiError::BadRequest(
+            "Symbol ID cannot be empty".to_string(),
+        ));
+    }
+
+    // First, retrieve the base symbol to get its related symbol IDs
+    let base_symbol = repository.get_symbol(&id).await?;
+
+    // If there are no related symbols, return an empty list
+    if base_symbol.related_symbols.is_empty() {
+        return Ok(Json(RelatedSymbolsResponse {
+            symbols: Vec::new(),
+            total_count: 0,
+        }));
+    }
+
+    // Fetch all related symbols
+    let mut related_symbols = Vec::new();
+
+    for related_id in &base_symbol.related_symbols {
+        match repository.get_symbol(related_id).await {
+            Ok(symbol) => related_symbols.push(symbol),
+            Err(err) => {
+                // Log the error but continue with other related symbols
+                eprintln!("Error fetching related symbol {}: {}", related_id, err);
+            }
+        }
+    }
+
+    let total_count = related_symbols.len();
+
+    Ok(Json(RelatedSymbolsResponse {
+        symbols: related_symbols,
+        total_count,
+    }))
+}
+
+/// Response for categories
+#[derive(Serialize)]
+pub struct CategoriesResponse {
+    pub categories: Vec<String>,
+    pub total_count: usize,
+}
+
+/// Get all available categories
+pub async fn get_categories(
+    State(repository): State<Arc<dyn SymbolRepository>>,
+) -> ApiResult<Json<CategoriesResponse>> {
+    // Get all symbols
+    let symbols = repository.list_symbols(None).await?;
+
+    // Extract unique categories
+    let mut categories = std::collections::HashSet::new();
+    for symbol in &symbols {
+        categories.insert(symbol.category.clone());
+    }
+
+    // Convert to Vec for the response
+    let categories: Vec<String> = categories.into_iter().collect();
+    let total_count = categories.len();
+
+    Ok(Json(CategoriesResponse {
+        categories,
+        total_count,
+    }))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
