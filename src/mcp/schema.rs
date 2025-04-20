@@ -21,6 +21,34 @@ pub struct GetSymbolsParams {
     pub limit: usize,
 }
 
+/// Parameters for the search_symbols MCP method (with non-optional query parameter)
+///
+/// This is a workaround for Cursor MCP client issues with Option<String> parameters.
+/// It provides a direct search endpoint with a required query parameter.
+#[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct SearchSymbolsParams {
+    /// Search query for symbol names or descriptions (required)
+    pub query: String,
+
+    /// Maximum number of symbols to return
+    #[serde(default = "default_limit")]
+    pub limit: usize,
+}
+
+/// Parameters for the filter_by_category MCP method (with non-optional category parameter)
+///
+/// This is a workaround for Cursor MCP client issues with Option<String> parameters.
+/// It provides a direct category filtering endpoint with a required category parameter.
+#[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct CategorySymbolsParams {
+    /// Category filter (dream, mythological, etc.) - required
+    pub category: String,
+
+    /// Maximum number of symbols to return
+    #[serde(default = "default_limit")]
+    pub limit: usize,
+}
+
 fn default_limit() -> usize {
     50
 }

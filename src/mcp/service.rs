@@ -2,7 +2,7 @@ use rmcp::{ServerHandler, model::*, tool};
 use std::sync::Arc;
 
 use crate::domain::SymbolRepository;
-use crate::mcp::schema::GetSymbolsParams;
+use crate::mcp::schema::{CategorySymbolsParams, GetSymbolsParams, SearchSymbolsParams};
 
 #[derive(Clone)]
 pub struct SymbolService {
@@ -27,6 +27,68 @@ impl SymbolService {
             (Some(category), None) => self.repository.list_symbols(Some(category)).await?,
             (None, None) => self.repository.list_symbols(None).await?,
         };
+
+        let total_count = symbols.len();
+        let symbols = symbols
+            .iter()
+            .take(params.limit)
+            .map(|s| crate::mcp::schema::SymbolDTO {
+                id: s.id.clone(),
+                name: s.name.clone(),
+                category: s.category.clone(),
+                description: s.description.clone(),
+                related_symbols: s.related_symbols.clone(),
+            })
+            .collect::<Vec<_>>();
+
+        let content = Content::json(serde_json::json!({
+            "symbols": symbols,
+            "total_count": total_count
+        }));
+
+        // Create and return a tool result with the contents unwrapped
+        let result = CallToolResult::success(vec![content?]);
+        Ok(result)
+    }
+
+    #[tool(description = "Search symbols by query term (non-optional parameter)")]
+    async fn search_symbols(
+        &self,
+        #[tool(aggr)] params: SearchSymbolsParams,
+    ) -> Result<CallToolResult, rmcp::Error> {
+        // Search symbols using the non-optional query parameter
+        let symbols = self.repository.search_symbols(&params.query).await?;
+
+        let total_count = symbols.len();
+        let symbols = symbols
+            .iter()
+            .take(params.limit)
+            .map(|s| crate::mcp::schema::SymbolDTO {
+                id: s.id.clone(),
+                name: s.name.clone(),
+                category: s.category.clone(),
+                description: s.description.clone(),
+                related_symbols: s.related_symbols.clone(),
+            })
+            .collect::<Vec<_>>();
+
+        let content = Content::json(serde_json::json!({
+            "symbols": symbols,
+            "total_count": total_count
+        }));
+
+        // Create and return a tool result with the contents unwrapped
+        let result = CallToolResult::success(vec![content?]);
+        Ok(result)
+    }
+
+    #[tool(description = "Filter symbols by category (non-optional parameter)")]
+    async fn filter_by_category(
+        &self,
+        #[tool(aggr)] params: CategorySymbolsParams,
+    ) -> Result<CallToolResult, rmcp::Error> {
+        // Filter symbols by category using the non-optional category parameter
+        let symbols = self.repository.list_symbols(Some(&params.category)).await?;
 
         let total_count = symbols.len();
         let symbols = symbols
