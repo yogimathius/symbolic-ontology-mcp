@@ -4,7 +4,6 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 use dream_ontology_mcp::domain::{RepositoryFactory, Symbol};
 use dream_ontology_mcp::infrastructure::postgres_repository::PostgresRepositoryFactory;

@@ -1,19 +1,16 @@
+use csv::ReaderBuilder;
+use reqwest;
+use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs::{self, File};
-use std::io::{BufReader, Cursor, Write};
+use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
-
-use csv::ReaderBuilder;
-use reqwest;
-use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 use tokio;
 use zip::ZipArchive;
 
 // Import domain and repository types
-use dream_ontology_mcp::domain::{RepositoryFactory, Symbol, SymbolRepository};
+use dream_ontology_mcp::domain::{RepositoryFactory, Symbol};
 use dream_ontology_mcp::infrastructure::postgres_repository::PostgresRepositoryFactory;
 
 #[derive(Debug, Deserialize)]
@@ -25,8 +22,6 @@ struct DreamDictionaryRow {
     // Add other possible field names
     #[serde(rename = "Description", default)]
     description: Option<String>,
-    #[serde(rename = "Category", default)]
-    category: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -38,8 +33,6 @@ struct DictionaryOfDreamsRow {
     // Add other possible field names
     #[serde(rename = "Description", default)]
     description: Option<String>,
-    #[serde(rename = "Category", default)]
-    category: Option<String>,
 }
 
 // New struct for dreams_interpretations.csv
@@ -54,8 +47,6 @@ struct DreamsInterpretationsRow {
 // New struct for cleaned_dream_interpretations.csv and dream_interpretations_words.csv
 #[derive(Debug, Deserialize)]
 struct CleanedDreamInterpretationsRow {
-    #[serde(rename = "Alphabet")]
-    alphabet: Option<String>,
     #[serde(rename = "Word")]
     word: Option<String>,
     #[serde(rename = "Interpretation")]

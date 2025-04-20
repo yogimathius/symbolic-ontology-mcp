@@ -1,9 +1,8 @@
 use clap::Parser;
-use dream_ontology_mcp::domain::{RepositoryFactory, SymbolRepository};
+use dream_ontology_mcp::domain::RepositoryFactory;
 use dream_ontology_mcp::infrastructure::memory_repository::MemoryRepositoryFactory;
 use dream_ontology_mcp::mcp::service::SymbolService;
 use rmcp::transport::sse_server::SseServer;
-use std::sync::Arc;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 /// Command line arguments for the MCP server
