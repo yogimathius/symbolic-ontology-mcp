@@ -75,6 +75,19 @@ get_symbol() {
     curl -s -X GET http://$API_HOST/symbols/$id | jq
 }
 
+# Get related symbols for a symbol ID
+get_related_symbols() {
+    local id=${1:-"water"}
+    print_test "Get Related Symbols for: $id"
+    curl -s -X GET http://$API_HOST/symbols/$id/related | jq
+}
+
+# Get all categories
+get_categories() {
+    print_test "Get All Categories"
+    curl -s -X GET http://$API_HOST/categories | jq
+}
+
 # MCP get_symbols test
 mcp_get_symbols() {
     print_test "MCP Get Symbols"
@@ -162,6 +175,8 @@ run_all_tests() {
     search_symbols
     combined_filter
     get_symbol
+    get_related_symbols
+    get_categories
     
     print_header "MCP Tests"
     mcp_get_symbols
@@ -200,6 +215,8 @@ if [ "$#" -eq 0 ]; then
     echo "  search [query]     - Search symbols"
     echo "  combined [cat] [q] [limit] - Combined filtering"
     echo "  symbol [id]        - Get symbol by ID"
+    echo "  related [id]       - Get related symbols for a symbol ID"
+    echo "  categories         - Get all categories"
     echo "  interpret [id] [context] [query] - Interpret symbol"
     echo "  mcp                - Test MCP get_symbols"
     echo "  mcp_cat [cat]      - Test MCP get_symbols with category"
@@ -240,6 +257,12 @@ case "$1" in
         ;;
     symbol)
         get_symbol "$2"
+        ;;
+    related)
+        get_related_symbols "$2"
+        ;;
+    categories)
+        get_categories
         ;;
     interpret)
         interpret_symbol "$2" "$3" "$4"

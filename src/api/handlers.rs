@@ -169,11 +169,17 @@ pub async fn get_related_symbols(
         ));
     }
 
+    println!("Getting related symbols for ID: {}", id);
+
     // First, retrieve the base symbol to get its related symbol IDs
     let base_symbol = repository.get_symbol(&id).await?;
 
+    println!("Base symbol retrieved: {}", base_symbol.name);
+    println!("Related symbol IDs: {:?}", base_symbol.related_symbols);
+
     // If there are no related symbols, return an empty list
     if base_symbol.related_symbols.is_empty() {
+        println!("No related symbols found");
         return Ok(Json(RelatedSymbolsResponse {
             symbols: Vec::new(),
             total_count: 0,
@@ -184,16 +190,22 @@ pub async fn get_related_symbols(
     let mut related_symbols = Vec::new();
 
     for related_id in &base_symbol.related_symbols {
+        println!("Fetching related symbol: {}", related_id);
         match repository.get_symbol(related_id).await {
-            Ok(symbol) => related_symbols.push(symbol),
+            Ok(symbol) => {
+                println!("Successfully fetched related symbol: {}", symbol.name);
+                related_symbols.push(symbol);
+            }
             Err(err) => {
                 // Log the error but continue with other related symbols
+                println!("Error fetching related symbol {}: {}", related_id, err);
                 eprintln!("Error fetching related symbol {}: {}", related_id, err);
             }
         }
     }
 
     let total_count = related_symbols.len();
+    println!("Total related symbols found: {}", total_count);
 
     Ok(Json(RelatedSymbolsResponse {
         symbols: related_symbols,
