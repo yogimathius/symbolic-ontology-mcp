@@ -6,11 +6,12 @@ use std::error::Error;
 use std::fs::{self, File};
 use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use tokio;
 use zip::ZipArchive;
 
 // Import domain and repository types
-use dream_ontology_mcp::domain::{RepositoryFactory, Symbol};
+use dream_ontology_mcp::domain::{RepositoryFactory, Symbol, SymbolRepository};
 use dream_ontology_mcp::infrastructure::postgres_repository::PostgresRepositoryFactory;
 
 #[derive(Debug, Deserialize)]
@@ -403,6 +404,461 @@ async fn process_files_and_seed(
     Ok(())
 }
 
+/// Add thematic relationships between symbols based on domain knowledge
+async fn enrich_symbol_relationships(
+    symbol_repo: Arc<dyn SymbolRepository>,
+) -> Result<(), Box<dyn Error>> {
+    println!("Starting relationship enrichment process...");
+
+    // Get all symbols from the database
+    let symbols = symbol_repo.list_symbols(None).await?;
+    println!(
+        "Loaded {} symbols for relationship processing",
+        symbols.len()
+    );
+
+    // Build a map for easy access
+    let mut symbol_map: HashMap<String, Symbol> =
+        symbols.into_iter().map(|s| (s.id.clone(), s)).collect();
+
+    // Define thematic categories with their members
+    // These groups define symbols that are semantically related
+    let categories = vec![
+        // Nature elements
+        (
+            "celestial",
+            vec![
+                "sun", "moon", "star", "sky", "heaven", "comet", "planet", "universe", "galaxy",
+            ],
+        ),
+        (
+            "water",
+            vec![
+                "ocean",
+                "river",
+                "lake",
+                "sea",
+                "rain",
+                "flood",
+                "swimming",
+                "beach",
+                "island",
+                "boat",
+                "ship",
+                "water",
+                "wave",
+                "tide",
+                "waterfall",
+            ],
+        ),
+        (
+            "earth",
+            vec![
+                "mountain",
+                "hill",
+                "valley",
+                "cave",
+                "rock",
+                "stone",
+                "dirt",
+                "soil",
+                "land",
+                "earthquake",
+                "volcano",
+            ],
+        ),
+        (
+            "plant",
+            vec![
+                "tree", "flower", "forest", "garden", "grass", "leaf", "root", "seed", "fruit",
+                "woods",
+            ],
+        ),
+        (
+            "weather",
+            vec![
+                "storm",
+                "rain",
+                "thunder",
+                "lightning",
+                "wind",
+                "hurricane",
+                "tornado",
+                "snow",
+                "hail",
+                "fog",
+                "cloud",
+            ],
+        ),
+        (
+            "fire",
+            vec![
+                "flame",
+                "burning",
+                "ash",
+                "smoke",
+                "candle",
+                "torch",
+                "fireplace",
+                "wildfire",
+                "explosion",
+                "fire",
+            ],
+        ),
+        // Animals
+        (
+            "mammals",
+            vec![
+                "dog", "cat", "horse", "lion", "tiger", "bear", "wolf", "fox", "rabbit", "deer",
+                "elephant", "monkey",
+            ],
+        ),
+        (
+            "reptiles",
+            vec![
+                "snake",
+                "lizard",
+                "turtle",
+                "crocodile",
+                "alligator",
+                "dinosaur",
+                "dragon",
+            ],
+        ),
+        (
+            "birds",
+            vec![
+                "eagle", "hawk", "owl", "crow", "raven", "dove", "peacock", "chicken", "swan",
+                "bird",
+            ],
+        ),
+        (
+            "insects",
+            vec![
+                "spider",
+                "ant",
+                "bee",
+                "butterfly",
+                "mosquito",
+                "fly",
+                "beetle",
+                "scorpion",
+            ],
+        ),
+        (
+            "aquatic",
+            vec![
+                "fish",
+                "shark",
+                "whale",
+                "dolphin",
+                "octopus",
+                "jellyfish",
+                "crab",
+                "lobster",
+            ],
+        ),
+        // Buildings/Structures
+        (
+            "home",
+            vec![
+                "house",
+                "apartment",
+                "mansion",
+                "cabin",
+                "cottage",
+                "room",
+                "attic",
+                "basement",
+                "kitchen",
+            ],
+        ),
+        (
+            "public",
+            vec![
+                "school", "hospital", "church", "temple", "castle", "prison", "tower", "building",
+                "office",
+            ],
+        ),
+        (
+            "infrastructure",
+            vec![
+                "bridge", "road", "highway", "tunnel", "airport", "station", "wall", "fence",
+                "gate",
+            ],
+        ),
+        // Transport
+        (
+            "vehicles",
+            vec![
+                "car",
+                "bus",
+                "train",
+                "airplane",
+                "helicopter",
+                "bicycle",
+                "motorcycle",
+                "boat",
+                "ship",
+                "rocket",
+            ],
+        ),
+        // Body parts
+        (
+            "body",
+            vec![
+                "head", "face", "eye", "ear", "nose", "mouth", "tongue", "tooth", "hair", "hand",
+                "arm", "leg", "foot", "heart", "blood", "bone",
+            ],
+        ),
+        // Concepts
+        (
+            "time",
+            vec![
+                "clock", "watch", "calendar", "year", "month", "day", "night", "hour", "minute",
+                "second", "past", "future",
+            ],
+        ),
+        (
+            "direction",
+            vec![
+                "north", "south", "east", "west", "up", "down", "left", "right", "center",
+            ],
+        ),
+        (
+            "color",
+            vec![
+                "red", "blue", "green", "yellow", "white", "black", "purple", "orange", "pink",
+                "brown", "gray",
+            ],
+        ),
+        (
+            "emotions",
+            vec![
+                "love",
+                "hate",
+                "fear",
+                "anger",
+                "joy",
+                "sadness",
+                "anxiety",
+                "peace",
+                "confusion",
+            ],
+        ),
+        (
+            "light",
+            vec![
+                "light",
+                "dark",
+                "shadow",
+                "sun",
+                "moon",
+                "star",
+                "lamp",
+                "candle",
+                "flashlight",
+                "darkness",
+                "brightness",
+            ],
+        ),
+        // Objects
+        (
+            "tools",
+            vec![
+                "hammer", "knife", "sword", "gun", "arrow", "axe", "spear", "shield", "key",
+                "lock", "rope", "chain",
+            ],
+        ),
+        (
+            "clothing",
+            vec![
+                "dress",
+                "shirt",
+                "pants",
+                "hat",
+                "shoe",
+                "boot",
+                "coat",
+                "jacket",
+                "glove",
+                "sock",
+                "underwear",
+                "costume",
+            ],
+        ),
+        (
+            "furniture",
+            vec![
+                "table", "chair", "bed", "couch", "desk", "shelf", "mirror", "clock", "lamp", "rug",
+            ],
+        ),
+        (
+            "communication",
+            vec![
+                "book",
+                "letter",
+                "phone",
+                "computer",
+                "television",
+                "radio",
+                "message",
+                "email",
+                "internet",
+            ],
+        ),
+        (
+            "food",
+            vec![
+                "bread",
+                "meat",
+                "fruit",
+                "vegetable",
+                "water",
+                "milk",
+                "wine",
+                "beer",
+                "coffee",
+                "tea",
+                "dinner",
+                "breakfast",
+            ],
+        ),
+        // Relationships
+        (
+            "family",
+            vec![
+                "mother",
+                "father",
+                "parent",
+                "child",
+                "baby",
+                "brother",
+                "sister",
+                "grandparent",
+                "family",
+            ],
+        ),
+        (
+            "social",
+            vec![
+                "friend", "enemy", "teacher", "student", "boss", "stranger", "neighbor", "crowd",
+                "group",
+            ],
+        ),
+        // Mythological
+        (
+            "mythical",
+            vec![
+                "angel", "demon", "god", "goddess", "devil", "ghost", "spirit", "monster",
+                "vampire", "werewolf", "fairy", "witch", "wizard", "dragon",
+            ],
+        ),
+    ];
+
+    // Count of relationships added
+    let mut relationship_count = 0;
+    let mut symbol_updates = 0;
+
+    // Track symbols in each category
+    let mut category_members: HashMap<String, Vec<String>> = HashMap::new();
+
+    // First pass: collect symbols by category
+    for (category, members) in categories {
+        let mut matched_symbols = Vec::new();
+
+        for &member in members.iter() {
+            // Exact match on ID
+            if symbol_map.contains_key(member) {
+                matched_symbols.push(member.to_string());
+                continue;
+            }
+
+            // Check name contains search term
+            for (id, symbol) in &symbol_map {
+                // Skip if already matched
+                if matched_symbols.contains(id) {
+                    continue;
+                }
+
+                // Check if symbol name contains the category term
+                let name_lower = symbol.name.to_lowercase();
+                if name_lower.contains(member) || name_lower == member {
+                    matched_symbols.push(id.clone());
+                }
+            }
+        }
+
+        if !matched_symbols.is_empty() {
+            category_members.insert(category.to_string(), matched_symbols);
+        }
+    }
+
+    // Second pass: create relationships within categories
+    for (category, members) in &category_members {
+        println!(
+            "Processing category '{}' with {} members",
+            category,
+            members.len()
+        );
+
+        // Link all symbols in the same category (up to a reasonable limit)
+        for symbol_id in members {
+            if let Some(symbol) = symbol_map.get_mut(symbol_id) {
+                // Get other category members
+                let related: Vec<String> = members
+                    .iter()
+                    .filter(|&id| id != symbol_id)
+                    .cloned()
+                    .collect();
+
+                // Take up to 5 related symbols to avoid overwhelming
+                let related_subset = if related.len() > 5 {
+                    related[0..5].to_vec()
+                } else {
+                    related
+                };
+
+                // Only proceed if we have new relationships to add
+                if related_subset.is_empty() {
+                    continue;
+                }
+
+                // Add new relationships (avoiding duplicates)
+                let mut added_any = false;
+                for related_id in &related_subset {
+                    if !symbol.related_symbols.contains(related_id) {
+                        symbol.related_symbols.push(related_id.clone());
+                        relationship_count += 1;
+                        added_any = true;
+                    }
+                }
+
+                // Only update if we added new relationships
+                if added_any {
+                    // Update in database
+                    match symbol_repo.update_symbol(symbol.clone()).await {
+                        Ok(_) => {
+                            symbol_updates += 1;
+                            if symbol_updates % 50 == 0 {
+                                println!("Updated {} symbols with relationships", symbol_updates);
+                            }
+                        }
+                        Err(e) => eprintln!("Failed to update symbol {}: {}", symbol_id, e),
+                    }
+                }
+            }
+        }
+    }
+
+    println!("Relationship enrichment complete!");
+    println!(
+        "Added {} relationships across {} symbols",
+        relationship_count, symbol_updates
+    );
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // Get database URL from environment variable or use default
@@ -459,5 +915,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Process the CSV files and seed the database
     process_files_and_seed(&database_url, csv_files).await?;
 
+    // Connect to the database for relationship enrichment
+    println!("\nStarting relationship enrichment phase...");
+    let factory = PostgresRepositoryFactory::new(&database_url).await?;
+    let symbol_repo = factory.create_symbol_repository();
+
+    // Enrich relationships
+    enrich_symbol_relationships(symbol_repo).await?;
+
+    println!("All processing complete!");
     Ok(())
 }
