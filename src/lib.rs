@@ -42,5 +42,8 @@ pub mod infrastructure;
 /// API endpoints, handlers, and routing
 pub mod api;
 
+/// Logging configuration and utilities
+pub mod logging;
+
 /// Utility functions and shared helpers
 mod utils;

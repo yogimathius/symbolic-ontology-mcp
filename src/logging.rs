@@ -6,15 +6,17 @@ use tower_http::trace::{self, TraceLayer};
 use tracing::{Level, info, warn};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{
+    EnvFilter,
+    fmt::{format::FmtSpan, time::Uptime},
+    prelude::*,
+};
 
-use crate::config::Config;
-
-/// Initialize the tracing subscriber based on the provided configuration
-pub fn init_tracing(config: &Config) {
+/// Initialize the tracing subscriber with a given filter
+pub fn init_tracing(filter: &str) {
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| config.get_tracing_filter().into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| filter.into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -84,4 +86,29 @@ pub fn trace_layer() -> TraceLayer<
                 }
             },
         )
+}
+
+pub fn setup_logging() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("info,rmcp=debug,symbol_ontology=debug"));
+
+    // Create a custom formatter with better colorization
+    let formatting_layer = tracing_subscriber::fmt::layer()
+        .with_span_events(FmtSpan::CLOSE)
+        .with_target(true)
+        .with_timer(Uptime::default())
+        .with_ansi(true)
+        .with_level(true)
+        .with_thread_ids(false)
+        .with_thread_names(false)
+        .with_line_number(true)
+        .with_file(true);
+
+    // Register the subscriber
+    tracing_subscriber::registry()
+        .with(env_filter)
+        .with(formatting_layer)
+        .try_init()?;
+
+    Ok(())
 }

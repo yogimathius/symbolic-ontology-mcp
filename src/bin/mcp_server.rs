@@ -1,9 +1,10 @@
 use clap::Parser;
 use dream_ontology_mcp::domain::RepositoryFactory;
 use dream_ontology_mcp::infrastructure::memory_repository::MemoryRepositoryFactory;
+use dream_ontology_mcp::logging::setup_logging;
 use dream_ontology_mcp::mcp::service::SymbolService;
 use rmcp::transport::sse_server::SseServer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing::info;
 
 /// Command line arguments for the MCP server
 #[derive(Parser, Debug)]
@@ -18,13 +19,8 @@ async fn main() -> anyhow::Result<()> {
     // Parse command line arguments
     let args = Args::parse();
 
-    // Setup logging
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    // Setup enhanced logging
+    setup_logging().expect("Failed to set up logging");
 
     // Initialize repository
     let factory = MemoryRepositoryFactory::new().with_test_data();
@@ -33,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
     // Start MCP server
     let bind_address = format!("127.0.0.1:{}", args.port);
 
-    println!("Starting MCP server on {}", bind_address);
+    info!("Starting MCP server on {}", bind_address);
 
     let server = SseServer::serve(bind_address.parse()?)
         .await?

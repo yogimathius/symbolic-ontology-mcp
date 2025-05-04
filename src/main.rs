@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::domain::RepositoryFactory;
 use crate::infrastructure::memory_repository::MemoryRepositoryFactory;
 use crate::infrastructure::postgres_repository::PostgresRepositoryFactory;
-use crate::logging::{init_tracing, trace_layer};
+use crate::logging::{setup_logging, trace_layer};
 
 /// API module containing HTTP endpoints and request handlers
 mod api;
@@ -50,11 +50,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => println!("Could not load .env file: {}", e),
     }
 
+    // Setup enhanced logging
+    setup_logging().expect("Failed to set up logging");
+
     // Load configuration from environment
     let config = Config::from_env();
-
-    // Initialize tracing with config
-    init_tracing(&config);
 
     info!(
         "Starting Dream Ontology Symbolic MCP Server v{}",
