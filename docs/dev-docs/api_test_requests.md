@@ -7,7 +7,7 @@ This document contains examples of curl commands for testing the various API end
 Check if the API is up and running:
 
 ```bash
-curl -X GET http://localhost:3000/health
+curl -X GET http://localhost:3003/health
 ```
 
 ## Symbols API
@@ -17,7 +17,7 @@ curl -X GET http://localhost:3000/health
 Retrieve all symbols without filtering:
 
 ```bash
-curl -X GET http://localhost:3000/symbols
+curl -X GET http://localhost:3003/symbols
 ```
 
 ### List Symbols with Limit
@@ -25,7 +25,7 @@ curl -X GET http://localhost:3000/symbols
 Limit the number of returned symbols:
 
 ```bash
-curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d '{"limit": 5}'
+curl -X GET http://localhost:3003/symbols -H "Content-Type: application/json" -d '{"limit": 5}'
 ```
 
 ### List Symbols by Category
@@ -33,7 +33,7 @@ curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d
 Filter symbols by category:
 
 ```bash
-curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d '{"category": "dream"}'
+curl -X GET http://localhost:3003/symbols -H "Content-Type: application/json" -d '{"category": "dream"}'
 ```
 
 ### Search Symbols
@@ -41,7 +41,7 @@ curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d
 Search for symbols with a query:
 
 ```bash
-curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d '{"query": "water"}'
+curl -X GET http://localhost:3003/symbols -H "Content-Type: application/json" -d '{"query": "water"}'
 ```
 
 ### Combined Filtering
@@ -49,7 +49,7 @@ curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d
 Apply multiple filters:
 
 ```bash
-curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d '{"category": "dream", "query": "water", "limit": 5}'
+curl -X GET http://localhost:3003/symbols -H "Content-Type: application/json" -d '{"category": "dream", "query": "water", "limit": 5}'
 ```
 
 ### Get Symbol by ID
@@ -57,7 +57,7 @@ curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d
 Retrieve a specific symbol by its ID:
 
 ```bash
-curl -X GET http://localhost:3000/symbols/water
+curl -X GET http://localhost:3003/symbols/water
 ```
 
 ## Symbol Interpretation
@@ -65,7 +65,7 @@ curl -X GET http://localhost:3000/symbols/water
 Request interpretation for a symbol:
 
 ```bash
-curl -X POST http://localhost:3000/interpret -H "Content-Type: application/json" -d '{"symbol_id": "water", "context": "recurring dream", "query": "What might this symbolize?"}'
+curl -X POST http://localhost:3003/interpret -H "Content-Type: application/json" -d '{"symbol_id": "water", "context": "recurring dream", "query": "What might this symbolize?"}'
 ```
 
 ## MCP Testing
@@ -132,7 +132,7 @@ curl -X POST http://localhost:3001/mcp -H "Content-Type: application/json" -d '{
 
 ## Testing Tips
 
-- Replace `localhost:3000` with your actual server address if deployed elsewhere
+- Replace `localhost:3003` with your actual server address if deployed elsewhere
 - For the MCP endpoint, use port 3001 or whatever port is configured for the MCP server
 - If testing with authentication, add authorization headers as needed
 - Save common requests in a script file for easy reuse
@@ -143,17 +143,17 @@ curl -X POST http://localhost:3001/mcp -H "Content-Type: application/json" -d '{
 ### Test Invalid Symbol ID
 
 ```bash
-curl -X GET http://localhost:3000/symbols/nonexistent-symbol
+curl -X GET http://localhost:3003/symbols/nonexistent-symbol
 ```
 
 ### Test Invalid JSON
 
 ```bash
-curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d '{invalid json'
+curl -X GET http://localhost:3003/symbols -H "Content-Type: application/json" -d '{invalid json'
 ```
 
 ### Test Invalid Parameters
 
 ```bash
-curl -X GET http://localhost:3000/symbols -H "Content-Type: application/json" -d '{"category": ""}'
+curl -X GET http://localhost:3003/symbols -H "Content-Type: application/json" -d '{"category": ""}'
 ```
