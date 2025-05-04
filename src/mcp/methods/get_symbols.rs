@@ -219,13 +219,11 @@ impl Handler for GetSymbolsHandler {
         let params: GetSymbolsParams = call.parse_params()?;
 
         // Fetch symbols from the repository
-        let symbols = match (params.category.as_deref(), params.query.as_deref()) {
-            // If we have a query, search for it
-            (_, Some(query)) => self.symbol_repository.search_symbols(query).await?,
-            // If we have just a category, filter by it
-            (Some(category), None) => self.symbol_repository.list_symbols(Some(category)).await?,
+        let symbols = match params.category.as_deref() {
+            // If we have a category, filter by it
+            Some(category) => self.symbol_repository.list_symbols(Some(category)).await?,
             // No filters, list all symbols
-            (None, None) => self.symbol_repository.list_symbols(None).await?,
+            None => self.symbol_repository.list_symbols(None).await?,
         };
 
         // Apply limit
