@@ -31,6 +31,5 @@ mod tests {
         let repository = factory.create_symbol_repository();
 
         let _router = router(repository);
-        // Just testing that it builds - actual routes tested in integration tests
     }
 }

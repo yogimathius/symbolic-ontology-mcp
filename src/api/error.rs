@@ -11,20 +11,10 @@ use crate::domain::RepositoryError;
 /// API Error types that can be returned by handlers
 #[derive(Debug)]
 pub enum ApiError {
-    /// Entity not found (404)
     NotFound(String),
-    /// Bad request (400)
     BadRequest(String),
-    /// Conflict (409)
     Conflict(String),
-    /// Internal server error (500)
     Internal(String),
-    /// Unauthorized (401)
-    #[allow(dead_code)]
-    Unauthorized(String),
-    /// Forbidden (403)
-    #[allow(dead_code)]
-    Forbidden(String),
 }
 
 impl fmt::Display for ApiError {
@@ -34,8 +24,6 @@ impl fmt::Display for ApiError {
             ApiError::BadRequest(msg) => format!("Bad request: {}", msg),
             ApiError::Conflict(msg) => format!("Conflict: {}", msg),
             ApiError::Internal(msg) => format!("Internal error: {}", msg),
-            ApiError::Unauthorized(msg) => format!("Unauthorized: {}", msg),
-            ApiError::Forbidden(msg) => format!("Forbidden: {}", msg),
         };
         write!(f, "{}", message)
     }
@@ -49,8 +37,6 @@ impl IntoResponse for ApiError {
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             ApiError::Conflict(msg) => (StatusCode::CONFLICT, msg),
             ApiError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
-            ApiError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg),
-            ApiError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
         };
 
         // Create a JSON response body with error details that matches Axum's default error format
