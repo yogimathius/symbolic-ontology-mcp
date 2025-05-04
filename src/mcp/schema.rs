@@ -7,14 +7,12 @@ use serde::{Deserialize, Serialize};
 /// Reference: https://modelcontextprotocol.io
 ///
 /// The `get_symbols` method allows clients to query the symbolic ontology with optional
-/// filtering by category and search terms.
+/// filtering by category. Note: Due to protocol limitations, the query parameter is now
+/// REMOVED - use search_symbols for text search.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct GetSymbolsParams {
     /// Category filter (dream, mythological, etc.)
     pub category: Option<String>,
-
-    /// Search query for symbol names or descriptions
-    pub query: Option<String>,
 
     /// Maximum number of symbols to return
     #[serde(default = "default_limit")]
@@ -25,6 +23,7 @@ pub struct GetSymbolsParams {
 ///
 /// This is a workaround for Cursor MCP client issues with Option<String> parameters.
 /// It provides a direct search endpoint with a required query parameter.
+/// RECOMMENDED: Use this method for all text searches.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct SearchSymbolsParams {
     /// Search query for symbol names or descriptions (required)
@@ -39,6 +38,7 @@ pub struct SearchSymbolsParams {
 ///
 /// This is a workaround for Cursor MCP client issues with Option<String> parameters.
 /// It provides a direct category filtering endpoint with a required category parameter.
+/// RECOMMENDED: Use this method for all category filtering.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct CategorySymbolsParams {
     /// Category filter (dream, mythological, etc.) - required
@@ -53,7 +53,7 @@ fn default_limit() -> usize {
     50
 }
 
-/// Response for the get_symbols MCP method
+/// Response for the get_symbols, search_symbols, and filter_by_category MCP methods
 ///
 /// This schema follows the Model Context Protocol (MCP) specification for method responses.
 /// Reference: https://modelcontextprotocol.io
@@ -64,6 +64,18 @@ pub struct GetSymbolsResponse {
 
     /// Total count of symbols matching the query (for pagination)
     pub total_count: usize,
+}
+
+/// Response for the get_categories MCP method
+///
+/// Returns all available categories in the symbol ontology
+#[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct GetCategoriesResponse {
+    /// List of available categories
+    pub categories: Vec<String>,
+
+    /// Total number of categories
+    pub count: usize,
 }
 
 /// Data transfer object for Symbol, used in MCP responses
@@ -97,14 +109,12 @@ mod tests {
     fn test_get_symbols_params_serialization() {
         let params = GetSymbolsParams {
             category: Some("dream".to_string()),
-            query: Some("water".to_string()),
             limit: 10,
         };
 
         let json = serde_json::to_value(params).unwrap();
 
         assert_eq!(json["category"], "dream");
-        assert_eq!(json["query"], "water");
         assert_eq!(json["limit"], 10);
     }
 
@@ -112,7 +122,6 @@ mod tests {
     fn test_get_symbols_params_default_limit() {
         let params = GetSymbolsParams {
             category: None,
-            query: None,
             limit: default_limit(),
         };
 
@@ -137,5 +146,19 @@ mod tests {
         assert_eq!(json["description"], "Symbolizes emotions");
         assert_eq!(json["related_symbols"][0], "ocean");
         assert_eq!(json["related_symbols"][1], "river");
+    }
+
+    #[test]
+    fn test_get_categories_response_serialization() {
+        let response = GetCategoriesResponse {
+            categories: vec!["nature".to_string(), "jungian".to_string()],
+            count: 2,
+        };
+
+        let json = serde_json::to_value(response).unwrap();
+
+        assert_eq!(json["categories"][0], "nature");
+        assert_eq!(json["categories"][1], "jungian");
+        assert_eq!(json["count"], 2);
     }
 }
