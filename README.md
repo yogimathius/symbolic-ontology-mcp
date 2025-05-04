@@ -57,6 +57,8 @@ The Dream Ontology Server supports two storage backends:
 
 The in-memory repository is enabled by default and requires no additional setup.
 
+<!-- Not implemented -->
+
 #### Using PostgreSQL with pgvector
 
 1. Start a PostgreSQL instance with pgvector using Docker Compose:
