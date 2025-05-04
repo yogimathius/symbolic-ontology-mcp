@@ -16,16 +16,18 @@ impl SymbolService {
         Self { repository }
     }
 
-    #[tool(description = "Get symbols from the ontology with optional filtering")]
+    #[tool(
+        description = "List all symbols or filter by category (use search_symbols for text search)"
+    )]
     async fn get_symbols(
         &self,
         #[tool(aggr)] params: GetSymbolsParams,
     ) -> Result<CallToolResult, rmcp::Error> {
-        // Reuse your existing logic
-        let symbols = match (params.category.as_deref(), params.query.as_deref()) {
-            (_, Some(query)) => self.repository.search_symbols(query).await?,
-            (Some(category), None) => self.repository.list_symbols(Some(category)).await?,
-            (None, None) => self.repository.list_symbols(None).await?,
+        // Only use this method when not performing text search
+        // For text search, use search_symbols instead
+        let symbols = match params.category.as_deref() {
+            Some(category) => self.repository.list_symbols(Some(category)).await?,
+            None => self.repository.list_symbols(None).await?,
         };
 
         let total_count = symbols.len();
@@ -46,17 +48,16 @@ impl SymbolService {
             "total_count": total_count
         }));
 
-        // Create and return a tool result with the contents unwrapped
         let result = CallToolResult::success(vec![content?]);
         Ok(result)
     }
 
-    #[tool(description = "Search symbols by query term (non-optional parameter)")]
+    #[tool(description = "Search symbols by text query - use this for all text searches")]
     async fn search_symbols(
         &self,
         #[tool(aggr)] params: SearchSymbolsParams,
     ) -> Result<CallToolResult, rmcp::Error> {
-        // Search symbols using the non-optional query parameter
+        // This is the recommended method for text search
         let symbols = self.repository.search_symbols(&params.query).await?;
 
         let total_count = symbols.len();
@@ -77,17 +78,16 @@ impl SymbolService {
             "total_count": total_count
         }));
 
-        // Create and return a tool result with the contents unwrapped
         let result = CallToolResult::success(vec![content?]);
         Ok(result)
     }
 
-    #[tool(description = "Filter symbols by category (non-optional parameter)")]
+    #[tool(description = "Get symbols by category - use this to filter by category")]
     async fn filter_by_category(
         &self,
         #[tool(aggr)] params: CategorySymbolsParams,
     ) -> Result<CallToolResult, rmcp::Error> {
-        // Filter symbols by category using the non-optional category parameter
+        // This is the recommended method for category filtering
         let symbols = self.repository.list_symbols(Some(&params.category)).await?;
 
         let total_count = symbols.len();
@@ -108,7 +108,30 @@ impl SymbolService {
             "total_count": total_count
         }));
 
-        // Create and return a tool result with the contents unwrapped
+        let result = CallToolResult::success(vec![content?]);
+        Ok(result)
+    }
+
+    #[tool(description = "Get all available symbol categories")]
+    async fn get_categories(&self) -> Result<CallToolResult, rmcp::Error> {
+        // Get all symbols and extract unique categories
+        let symbols = self.repository.list_symbols(None).await?;
+
+        // Extract unique categories using a HashSet
+        let mut categories = std::collections::HashSet::new();
+        for symbol in &symbols {
+            categories.insert(symbol.category.clone());
+        }
+
+        // Convert to a sorted Vec
+        let mut categories: Vec<String> = categories.into_iter().collect();
+        categories.sort();
+
+        let content = Content::json(serde_json::json!({
+            "categories": categories,
+            "count": categories.len()
+        }));
+
         let result = CallToolResult::success(vec![content?]);
         Ok(result)
     }
@@ -125,7 +148,7 @@ impl ServerHandler for SymbolService {
                 name: "Dream Ontology MCP Server".to_string(),
                 version: env!("CARGO_PKG_VERSION").to_string(),
             },
-            instructions: Some("Get dream symbols from the ontology.".to_string()),
+            instructions: Some("Get dream symbols from the ontology. For searching symbols, use search_symbols. For filtering by category, use filter_by_category.".to_string()),
         }
     }
 }
