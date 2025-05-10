@@ -1,0 +1,37 @@
+# fly.toml app configuration file generated for symbol-ontology on 2025-05-09T22:13:07-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "symbolic-grounding-api"
+primary_region = "sea"
+
+[build]
+dockerfile = "Dockerfile"
+
+[env]
+PORT = "3002"
+
+[[services]]
+protocol = "tcp"
+internal_port = 3002
+processes = ["app"]
+
+  [services.concurrency]
+  type = "connections"
+  hard_limit = 250
+  soft_limit = 200
+
+  [[services.ports]]
+  port = 80
+  handlers = ["http"]
+  force_https = true
+
+  [[services.ports]]
+  port = 443
+  handlers = ["tls", "http"]
+
+  [services.tcp_checks]
+  interval = "30s"
+  timeout = "10s"
+  grace_period = "30s"
