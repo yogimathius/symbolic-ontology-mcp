@@ -27,17 +27,22 @@ async fn main() -> anyhow::Result<()> {
     let repository = factory.create_symbol_repository();
 
     // Start MCP server
-    let bind_address = format!("127.0.0.1:{}", args.port);
+    let port = std::env::var("PORT").unwrap_or_else(|_| args.port.to_string());
+    let bind_address = format!("0.0.0.0:{}", port);
 
     info!("Starting MCP server on {}", bind_address);
 
+    // Create the core SSE server
     let server = SseServer::serve(bind_address.parse()?)
         .await?
         .with_service(move || SymbolService::new(repository.clone()));
 
+    info!("Server ready to accept connections");
+
     // Keep the server running until Ctrl+C
     tokio::signal::ctrl_c().await?;
     server.cancel();
+    info!("Server shutting down");
 
     Ok(())
 }
