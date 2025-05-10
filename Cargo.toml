@@ -24,7 +24,7 @@ rmcp = { version = "0.1.5", features = ["server", "transport-sse-server", "trans
 serde = "1.0.219"
 serde_json = { version = "1.0.140", features = ["preserve_order"] }
 tokio = { version = "1.44.2", features = ["full", "macros"] }
-tower-http = { version = "0.6.2", features = ["trace"] }
+tower-http = { version = "0.6.2", features = ["cors", "trace"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 # Database dependencies
@@ -32,6 +32,7 @@ sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "json", "uuid
 pgvector = { version = "0.4", features = ["sqlx"] }
 csv = "1.3.1"
 zip = "2.6.1"
+tokio-util = { version = "0.7.15", features = ["full"] }
 
 [dev-dependencies]
 hyper = { version = "1.6.0", features = ["full"] }
