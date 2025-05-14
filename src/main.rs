@@ -74,13 +74,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .await?;
             pg_factory.create_symbol_repository()
         } else {
-            info!("No database URL provided, falling back to in-memory repository with test data");
-            let memory_factory = MemoryRepositoryFactory::new().with_test_data();
+            info!("No database URL provided, falling back to in-memory repository with test data and mythology data");
+            let memory_factory = MemoryRepositoryFactory::new()
+                .with_test_data()
+                .with_json_data("data/myth-symbol-seed.json");
             memory_factory.create_symbol_repository()
         }
     } else {
-        info!("Using in-memory repository with test data");
-        let memory_factory = MemoryRepositoryFactory::new().with_test_data();
+        info!("Using in-memory repository with test data and mythology data");
+        let memory_factory = MemoryRepositoryFactory::new()
+            .with_test_data()
+            .with_json_data("data/myth-symbol-seed.json");
         memory_factory.create_symbol_repository()
     };
 

@@ -12,11 +12,29 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY . .
 RUN cargo build --release --bin mcp_server
+RUN cargo build --release --bin mcp_websocket_server
+RUN cargo build --release --bin mcp_http_upgrade_server
+RUN cargo build --release --bin mcp_streamable_http_server
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Copy all server binaries
 COPY --from=builder /app/target/release/mcp_server /usr/local/bin
-EXPOSE 3002
+COPY --from=builder /app/target/release/mcp_websocket_server /usr/local/bin
+COPY --from=builder /app/target/release/mcp_http_upgrade_server /usr/local/bin
+COPY --from=builder /app/target/release/mcp_streamable_http_server /usr/local/bin
+
+# Copy test HTML files
+COPY test_websocket.html /app/
+COPY test_http_upgrade.html /app/
+COPY test_streamable_http.html /app/
+COPY test_all_servers.html /app/
+
+# Expose all ports
+EXPOSE 3002 3003 3004 3005
+
+# Default to running the original SSE server
 ENTRYPOINT ["/usr/local/bin/mcp_server"]

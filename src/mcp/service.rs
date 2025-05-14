@@ -1,8 +1,37 @@
+use log::info;
 use rmcp::{ServerHandler, model::*, tool};
+use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::domain::SymbolRepository;
 use crate::mcp::schema::{CategorySymbolsParams, GetSymbolsParams, SearchSymbolsParams};
+
+/// Helper function to pretty-print the JSON result for logging
+fn pretty_print_result(content: &Content) -> String {
+    if let Some(text) = content.as_text() {
+        if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text.text) {
+            if let Ok(pretty) = serde_json::to_string_pretty(&value) {
+                // Return a shortened version with just a few symbols
+                if pretty.len() > 500 {
+                    let mut shortened = pretty[..400].to_string();
+                    shortened.push_str("\n... (truncated) ...\n}");
+                    return shortened;
+                }
+                return pretty;
+            }
+        }
+        return text.text.clone();
+    }
+    format!("{:?}", content)
+}
+
+/// Helper function to pretty-print request parameters
+fn pretty_print_params<T: serde::Serialize + Debug>(params: &T) -> String {
+    match serde_json::to_string_pretty(params) {
+        Ok(pretty) => pretty,
+        Err(_) => format!("{:?}", params),
+    }
+}
 
 #[derive(Clone)]
 pub struct SymbolService {
@@ -23,8 +52,10 @@ impl SymbolService {
         &self,
         #[tool(aggr)] params: GetSymbolsParams,
     ) -> Result<CallToolResult, rmcp::Error> {
-        // Only use this method when not performing text search
-        // For text search, use search_symbols instead
+        // Log request parameters in a cleaner format
+        info!("Tool call: get_symbols");
+        info!("Parameters: {}", pretty_print_params(&params));
+
         let symbols = match params.category.as_deref() {
             Some(category) => self.repository.list_symbols(Some(category)).await?,
             None => self.repository.list_symbols(None).await?,
@@ -46,9 +77,18 @@ impl SymbolService {
         let content = Content::json(serde_json::json!({
             "symbols": symbols,
             "total_count": total_count
-        }));
+        }))?;
 
-        let result = CallToolResult::success(vec![content?]);
+        info!(
+            "Returning {} symbols (from total of {})",
+            symbols.len(),
+            total_count
+        );
+
+        // Log the prettified content
+        info!("Result preview:\n{}", pretty_print_result(&content));
+
+        let result = CallToolResult::success(vec![content]);
         Ok(result)
     }
 
@@ -57,7 +97,10 @@ impl SymbolService {
         &self,
         #[tool(aggr)] params: SearchSymbolsParams,
     ) -> Result<CallToolResult, rmcp::Error> {
-        // This is the recommended method for text search
+        // Log request parameters in a cleaner format
+        info!("Tool call: search_symbols");
+        info!("Parameters: {}", pretty_print_params(&params));
+
         let symbols = self.repository.search_symbols(&params.query).await?;
 
         let total_count = symbols.len();
@@ -76,9 +119,19 @@ impl SymbolService {
         let content = Content::json(serde_json::json!({
             "symbols": symbols,
             "total_count": total_count
-        }));
+        }))?;
 
-        let result = CallToolResult::success(vec![content?]);
+        info!(
+            "Found {} symbols matching query '{}' (from total of {})",
+            symbols.len(),
+            params.query,
+            total_count
+        );
+
+        // Log the prettified content
+        info!("Result preview:\n{}", pretty_print_result(&content));
+
+        let result = CallToolResult::success(vec![content]);
         Ok(result)
     }
 
@@ -87,7 +140,10 @@ impl SymbolService {
         &self,
         #[tool(aggr)] params: CategorySymbolsParams,
     ) -> Result<CallToolResult, rmcp::Error> {
-        // This is the recommended method for category filtering
+        // Log request parameters in a cleaner format
+        info!("Tool call: filter_by_category");
+        info!("Parameters: {}", pretty_print_params(&params));
+
         let symbols = self.repository.list_symbols(Some(&params.category)).await?;
 
         let total_count = symbols.len();
@@ -106,14 +162,26 @@ impl SymbolService {
         let content = Content::json(serde_json::json!({
             "symbols": symbols,
             "total_count": total_count
-        }));
+        }))?;
 
-        let result = CallToolResult::success(vec![content?]);
+        info!(
+            "Found {} symbols in category '{}' (from total of {})",
+            symbols.len(),
+            params.category,
+            total_count
+        );
+
+        // Log the prettified content
+        info!("Result preview:\n{}", pretty_print_result(&content));
+
+        let result = CallToolResult::success(vec![content]);
         Ok(result)
     }
 
     #[tool(description = "Get all available symbol categories")]
     async fn get_categories(&self) -> Result<CallToolResult, rmcp::Error> {
+        info!("Tool call: get_categories");
+
         // Get all symbols and extract unique categories
         let symbols = self.repository.list_symbols(None).await?;
 
@@ -130,9 +198,14 @@ impl SymbolService {
         let content = Content::json(serde_json::json!({
             "categories": categories,
             "count": categories.len()
-        }));
+        }))?;
 
-        let result = CallToolResult::success(vec![content?]);
+        info!("Found {} categories", categories.len());
+
+        // Log the prettified content
+        info!("Result preview:\n{}", pretty_print_result(&content));
+
+        let result = CallToolResult::success(vec![content]);
         Ok(result)
     }
 }

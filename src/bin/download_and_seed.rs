@@ -174,6 +174,35 @@ fn row_to_symbol(symbol_name: &str, interpretation: &str, description: Option<&s
     symbol
 }
 
+// Reset the database by deleting all symbols
+async fn reset_database(symbol_repo: Arc<dyn SymbolRepository>) -> Result<(), Box<dyn Error>> {
+    println!("Resetting database - clearing all symbols...");
+    
+    // Get all symbols
+    let symbols = symbol_repo.list_symbols(None).await?;
+    println!("Found {} symbols to delete", symbols.len());
+    
+    let mut deleted_count = 0;
+    
+    // Delete each symbol
+    for symbol in symbols {
+        match symbol_repo.delete_symbol(&symbol.id).await {
+            Ok(_) => {
+                deleted_count += 1;
+                if deleted_count % 100 == 0 {
+                    println!("Deleted {} symbols...", deleted_count);
+                }
+            },
+            Err(err) => {
+                eprintln!("Error deleting symbol {}: {}", symbol.id, err);
+            }
+        }
+    }
+    
+    println!("Database reset complete. Deleted {} symbols.", deleted_count);
+    Ok(())
+}
+
 async fn process_files_and_seed(
     database_url: &str,
     csv_files: Vec<PathBuf>,
@@ -183,6 +212,9 @@ async fn process_files_and_seed(
     // Connect to the database
     let factory = PostgresRepositoryFactory::new(database_url).await?;
     let symbol_repo = factory.create_symbol_repository();
+
+    // Reset the database first
+    reset_database(symbol_repo.clone()).await?;
 
     // Track processed symbols to avoid duplicates
     let mut processed_symbols = HashSet::new();

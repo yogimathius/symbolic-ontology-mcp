@@ -3,7 +3,11 @@ use crate::domain::{
     SymbolSetRepository,
 };
 use async_trait;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::Path;
 use std::sync::{Arc, RwLock};
 
 /// Generic repository trait for basic CRUD operations
@@ -35,6 +39,76 @@ pub struct MemoryRepositoryFactory {
 impl MemoryRepositoryFactory {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Load symbols from a JSON file
+    pub fn with_json_data(self, json_path: impl AsRef<Path>) -> Self {
+        let path = json_path.as_ref();
+        println!("Attempting to load symbols from: {}", path.display());
+
+        if !path.exists() {
+            eprintln!("Warning: JSON file not found: {}", path.display());
+            return self;
+        }
+
+        match Self::read_symbols_from_json(path) {
+            Ok(loaded_symbols) => {
+                println!(
+                    "Successfully loaded {} symbols from JSON file",
+                    loaded_symbols.len()
+                );
+                let mut symbols = self.symbols.write().unwrap();
+
+                for symbol in loaded_symbols {
+                    println!("Adding symbol: {} ({})", symbol.name, symbol.category);
+                    symbols.insert(symbol.id.clone(), symbol);
+                }
+
+                println!("Total symbols in repository: {}", symbols.len());
+            }
+            Err(e) => {
+                eprintln!("Error loading symbols from JSON: {}", e);
+            }
+        }
+
+        self
+    }
+
+    /// Read symbols from a JSON file
+    fn read_symbols_from_json(path: &Path) -> Result<Vec<Symbol>, Box<dyn std::error::Error>> {
+        println!("Reading JSON file: {}", path.display());
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+
+        #[derive(Debug, Deserialize, Serialize)]
+        struct SymbolData {
+            id: String,
+            name: String,
+            category: String,
+            description: String,
+            interpretations: std::collections::HashMap<String, String>,
+            related_symbols: Vec<String>,
+            properties: std::collections::HashMap<String, String>,
+        }
+
+        let symbols_data: Vec<SymbolData> = serde_json::from_reader(reader)?;
+
+        // Convert SymbolData to Symbol
+        let symbols: Vec<Symbol> = symbols_data
+            .into_iter()
+            .map(|data| {
+                let mut symbol = Symbol::new(data.id, data.name, data.category, data.description);
+
+                symbol.interpretations = data.interpretations;
+                symbol.related_symbols = data.related_symbols;
+                symbol.properties = data.properties;
+
+                symbol
+            })
+            .collect();
+
+        println!("Read {} symbols from JSON file", symbols.len());
+        Ok(symbols)
     }
 
     pub fn with_test_data(self) -> Self {

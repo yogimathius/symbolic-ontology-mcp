@@ -8,6 +8,22 @@ edition = "2024"
 name = "dream_ontology_mcp"
 path = "src/lib.rs"
 
+[[bin]]
+name = "mcp_server"
+path = "src/bin/mcp_server.rs"
+
+[[bin]]
+name = "mcp_client"
+path = "src/bin/mcp_client.rs"
+
+[[bin]]
+name = "download_and_seed"
+path = "src/bin/download_and_seed.rs"
+
+[[bin]]
+name = "myth_seeder"
+path = "src/bin/myth_seeder.rs"
+
 [[test]]
 name = "integration"
 path = "tests/lib.rs"
@@ -19,23 +35,31 @@ axum = "0.8.3"
 axum-macros = "0.5.0"
 clap = { version = "4.5.5", features = ["derive"] }
 dotenvy = "0.15"
+futures = "0.3.30"
+hyper = { version = "1.6.0", features = ["full"] }
+hyper-util = { version = "0.1.3", features = ["tokio"] }
+pin-project-lite = "0.2.13"
 reqwest = { version = "0.12.15", features = ["json", "stream"] }
 rmcp = { version = "0.1.5", features = ["server", "transport-sse-server", "transport-sse", "client"] }
 serde = "1.0.219"
 serde_json = { version = "1.0.140", features = ["preserve_order"] }
 tokio = { version = "1.44.2", features = ["full", "macros"] }
+tokio-stream = "0.1.15"
+tokio-tungstenite = "0.21.0"
 tower-http = { version = "0.6.2", features = ["cors", "trace"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+uuid = { version = "1.7.0", features = ["v4"] }
 # Database dependencies
 sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "json", "uuid", "time"] }
 pgvector = { version = "0.4", features = ["sqlx"] }
 csv = "1.3.1"
 zip = "2.6.1"
 tokio-util = { version = "0.7.15", features = ["full"] }
+fern = "0.7.1"
+humantime = "2.2.0"
+log = "0.4.27"
 
 [dev-dependencies]
-hyper = { version = "1.6.0", features = ["full"] }
-tokio = { version = "1.44.2", features = ["macros", "rt-multi-thread"] }
 tokio-test = "0.4.4"
 tower = "0.5.2"
