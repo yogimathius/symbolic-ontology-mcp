@@ -8,42 +8,37 @@
  *
  * - **Domain Models**: Define the core business objects like `Symbol` and `SymbolSet`
  * - **MCP Implementation**: Protocol-compliant methods for symbolic reasoning
- * - **Infrastructure**: Repository implementations and external integrations
+ * - **Database**: Direct PostgreSQL access for data persistence
  * - **API**: HTTP endpoint handlers and routing for the Axum server
  *
  * ## Usage Example
  *
- * ```rust
- * use dream_ontology_mcp::domain::{Symbol, SymbolRepository};
- * use dream_ontology_mcp::infrastructure::memory_repository::MemoryRepositoryFactory;
+ * ```rust,no_run
+ * use dream_ontology_mcp::db::{pool, queries::SymbolQueries, models::Symbol};
+ * use sqlx::PgPool;
  *
- * // Create a repository with test data
- * let repo_factory = MemoryRepositoryFactory::new().with_test_data();
- * let symbol_repo = repo_factory.create_symbol_repository();
+ * # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+ * // Create a database connection pool
+ * let db_pool = pool::create_pool("postgres://postgres:postgres@localhost/dream_ontology").await?;
  *
- * // Use the repository asynchronously
- * async fn get_water_symbol(repo: Arc<dyn SymbolRepository>) -> Option<Symbol> {
- *     repo.get("water").await.ok()
- * }
+ * // Use the database directly
+ * let symbol = SymbolQueries::get_by_id(&db_pool, "water").await?;
+ * println!("Found symbol: {}", symbol.name);
+ * # Ok(())
+ * # }
  * ```
  */
 
-// Re-export all modules for better ergonomics
-
-/// Core domain models and business logic
 pub mod domain;
 
-/// MCP protocol implementation for symbolic reasoning
 pub mod mcp;
 
-/// Infrastructure implementations for repositories and external services
-pub mod infrastructure;
+pub mod db;
 
-/// API endpoints, handlers, and routing
 pub mod api;
 
-/// Logging configuration and utilities
 pub mod logging;
 
-/// Utility functions and shared helpers
 mod utils;
+
+pub mod config;
