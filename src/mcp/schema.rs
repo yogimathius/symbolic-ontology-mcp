@@ -6,14 +6,10 @@ use serde::{Deserialize, Serialize};
 /// This schema follows the Model Context Protocol (MCP) specification for method parameters.
 /// Reference: https://modelcontextprotocol.io
 ///
-/// The `get_symbols` method allows clients to query the symbolic ontology with optional
-/// filtering by category. Note: Due to protocol limitations, the query parameter is now
-/// REMOVED - use search_symbols for text search.
+/// The `get_symbols` method allows clients to query the symbolic ontology without filtering.
+/// For category filtering, use filter_by_category. For text search, use search_symbols.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct GetSymbolsParams {
-    /// Category filter (dream, mythological, etc.)
-    pub category: Option<String>,
-
     /// Maximum number of symbols to return
     #[serde(default = "default_limit")]
     pub limit: usize,
@@ -107,21 +103,16 @@ mod tests {
 
     #[test]
     fn test_get_symbols_params_serialization() {
-        let params = GetSymbolsParams {
-            category: Some("dream".to_string()),
-            limit: 10,
-        };
+        let params = GetSymbolsParams { limit: 10 };
 
         let json = serde_json::to_value(params).unwrap();
 
-        assert_eq!(json["category"], "dream");
         assert_eq!(json["limit"], 10);
     }
 
     #[test]
     fn test_get_symbols_params_default_limit() {
         let params = GetSymbolsParams {
-            category: None,
             limit: default_limit(),
         };
 
