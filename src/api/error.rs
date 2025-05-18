@@ -6,9 +6,9 @@ use axum::{
 use serde_json::json;
 use std::fmt;
 
-use crate::domain::RepositoryError;
+use crate::db::pool::DbError;
+use crate::db::repository::RepositoryError;
 
-/// API Error types that can be returned by handlers
 #[derive(Debug)]
 pub enum ApiError {
     NotFound(String),
@@ -29,7 +29,6 @@ impl fmt::Display for ApiError {
     }
 }
 
-/// Transform ApiError into an HTTP response
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, message) = match &self {
@@ -39,22 +38,31 @@ impl IntoResponse for ApiError {
             ApiError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
         };
 
-        // Create a JSON response body with error details that matches Axum's default error format
         let body = Json(json!({
             "statusCode": status.as_u16(),
             "error": status.canonical_reason().unwrap_or("Unknown"),
             "message": message,
         }));
 
-        // Combine the status code and body
         (status, body).into_response()
     }
 }
 
-/// Shorthand for API result type
 pub type ApiResult<T> = Result<T, ApiError>;
 
-/// Convert from domain RepositoryError to API error
+impl From<DbError> for ApiError {
+    fn from(err: DbError) -> Self {
+        match err {
+            DbError::NotFound => ApiError::NotFound("Record not found".to_string()),
+            DbError::Conflict(msg) => ApiError::Conflict(msg),
+            DbError::Connection(msg) => {
+                ApiError::Internal(format!("Database connection error: {}", msg))
+            }
+            DbError::Sqlx(err) => ApiError::Internal(format!("Database error: {}", err)),
+        }
+    }
+}
+
 impl From<RepositoryError> for ApiError {
     fn from(err: RepositoryError) -> Self {
         match err {
@@ -62,45 +70,25 @@ impl From<RepositoryError> for ApiError {
             RepositoryError::Conflict(msg) => ApiError::Conflict(msg),
             RepositoryError::Validation(msg) => ApiError::BadRequest(msg),
             RepositoryError::Internal(msg) => ApiError::Internal(msg),
+            RepositoryError::NotImplemented(msg) => {
+                ApiError::Internal(format!("Not implemented: {}", msg))
+            }
         }
     }
 }
 
-/// Maps from RMCP errors to API errors
-///
-/// This mapping translates errors from the MCP protocol (defined in JSON-RPC 2.0
-/// and MCP specifications) to appropriate HTTP status codes and messages.
-///
-/// References:
-/// - JSON-RPC 2.0: https://www.jsonrpc.org/specification#error_object
-/// - MCP Specification: https://modelcontextprotocol.io
-/// - HTTP Status Codes: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-impl From<crate::mcp::methods::get_symbols::RmcpError> for ApiError {
-    fn from(err: crate::mcp::methods::get_symbols::RmcpError) -> Self {
-        use crate::mcp::methods::get_symbols::RmcpError;
+impl From<rmcp::Error> for ApiError {
+    fn from(err: rmcp::Error) -> Self {
+        let error_message = format!("{}", err);
 
-        match err {
-            // Invalid params in JSON-RPC (-32602) maps to HTTP 400 Bad Request
-            RmcpError::ParseError(msg) => ApiError::BadRequest(msg),
-            RmcpError::RepositoryError(msg) => {
-                // For repository errors, we can determine the type based on message content
-                // since we don't have direct access to original RepositoryError
-                if msg.starts_with("Not found:") {
-                    // MCP NotFound (-32001) maps to HTTP 404 Not Found
-                    ApiError::NotFound(msg)
-                } else if msg.starts_with("Conflict:") {
-                    // MCP Conflict (-32002) maps to HTTP 409 Conflict
-                    ApiError::Conflict(msg)
-                } else if msg.starts_with("Validation:") {
-                    // Maps to HTTP 400 Bad Request
-                    ApiError::BadRequest(msg)
-                } else {
-                    // All other server errors map to HTTP 500 Internal Server Error
-                    ApiError::Internal(msg)
-                }
-            }
-            // Internal error in JSON-RPC (-32603) maps to HTTP 500 Internal Server Error
-            RmcpError::Other(msg) => ApiError::Internal(msg),
+        if error_message.contains("not found") || error_message.contains("NotFound") {
+            ApiError::NotFound(error_message)
+        } else if error_message.contains("invalid") || error_message.contains("Invalid") {
+            ApiError::BadRequest(error_message)
+        } else if error_message.contains("conflict") || error_message.contains("Conflict") {
+            ApiError::Conflict(error_message)
+        } else {
+            ApiError::Internal(error_message)
         }
     }
 }
@@ -116,12 +104,20 @@ mod tests {
     }
 
     #[test]
-    fn test_repository_error_conversion() {
-        let repo_error = RepositoryError::NotFound("Symbol not found".to_string());
-        let api_error = ApiError::from(repo_error);
+    fn test_db_error_conversion() {
+        let db_error = DbError::NotFound;
+        let api_error = ApiError::from(db_error);
 
         match api_error {
-            ApiError::NotFound(msg) => assert_eq!(msg, "Symbol not found"),
+            ApiError::NotFound(_) => { /* Test passed */ }
+            _ => panic!("Conversion produced wrong error type"),
+        }
+
+        let db_error = DbError::Conflict("Duplicate key".to_string());
+        let api_error = ApiError::from(db_error);
+
+        match api_error {
+            ApiError::Conflict(msg) => assert_eq!(msg, "Duplicate key"),
             _ => panic!("Conversion produced wrong error type"),
         }
     }

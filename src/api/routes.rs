@@ -1,35 +1,44 @@
 use axum::{
     Router,
-    routing::{get, post},
+    routing::{delete, get, post},
 };
-use std::sync::Arc;
+use sqlx::PgPool;
 
-use super::handlers;
-use crate::domain::SymbolRepository;
+use super::{handlers, state::AppState};
 
-/// Builds the main application router with all API routes
-pub fn router(symbol_repository: Arc<dyn SymbolRepository>) -> Router {
-    Router::new()
-        .route("/health", get(handlers::health_check))
-        .route("/symbols", get(handlers::list_symbols))
-        .route("/symbols/{id}", get(handlers::get_symbol))
-        .route("/symbols/{id}/related", get(handlers::get_related_symbols))
-        .route("/categories", get(handlers::get_categories))
-        .route("/interpret", post(handlers::interpret_symbol))
-        .with_state(symbol_repository)
+pub fn router(db_pool: PgPool) -> Router {
+    let app_state = AppState::new(db_pool.clone());
+
+    let repository_api = Router::new()
+        .route("/symbols", get(handlers::repo_list_symbols))
+        .route("/symbols/{id}", get(handlers::repo_get_symbol))
+        .route("/symbols/{id}", post(handlers::repo_update_symbol))
+        .route("/symbols", post(handlers::repo_create_symbol))
+        .route("/symbols/{id}", delete(handlers::repo_delete_symbol))
+        .route("/symbols/{id}/related", post(handlers::add_related_symbol))
+        .route("/symbol-sets", get(handlers::list_symbol_sets))
+        .route("/symbol-sets/{id}", get(handlers::get_symbol_set))
+        .route("/symbol-sets/search", get(handlers::search_symbol_sets))
+        .route("/symbol-sets", post(handlers::create_symbol_set))
+        .route("/symbol-sets/{id}", post(handlers::update_symbol_set))
+        .route("/symbol-sets/{id}", delete(handlers::delete_symbol_set))
+        .with_state(app_state);
+
+    repository_api
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::RepositoryFactory;
-    use crate::infrastructure::memory_repository::MemoryRepositoryFactory;
 
-    #[test]
-    fn test_router_creation() {
-        let factory = MemoryRepositoryFactory::new();
-        let repository = factory.create_symbol_repository();
+    #[tokio::test]
+    async fn test_router_creation() {
+        // Create a mock pool without connecting to a real database
+        let pool = PgPool::connect_lazy("postgres://mock:mock@mock/mock")
+            .expect("Failed to create mock pool");
 
-        let _router = router(repository);
+        // This just tests that the router builds successfully
+        let _router = router(pool);
+        // If we get here, the test passed
     }
 }

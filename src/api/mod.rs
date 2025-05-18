@@ -1,6 +1,10 @@
+/*!
+ * # API Module
+ *
+ * This module contains the HTTP API for the Dream Ontology MCP Server.
+ */
+
 pub mod error;
 pub mod handlers;
 pub mod routes;
-
-// Re-export main router
-pub use routes::router;
+pub mod state;
