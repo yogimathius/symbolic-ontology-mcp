@@ -4,27 +4,16 @@ use dream_ontology_mcp::llm::client::LlmClient;
 fn test_llm_client_creation() {
     let _client = LlmClient::new("test-api-key".to_string(), "test-model".to_string());
     let _default_client = LlmClient::with_default_model("test-api-key".to_string());
-
-    // No assertions needed, we're just verifying the client can be created
 }
 
 #[tokio::test]
 async fn test_llm_client_generate() {
-    // This is a placeholder test that would need mocking to properly test
-    // For now, we're just ensuring the method signatures are correct
     let _client = LlmClient::new("test-api-key".to_string(), "test-model".to_string());
-
-    // This test would be enhanced with mocking in the future
-    // We're just testing that the code compiles for now
 }
 
 #[tokio::test]
 async fn test_llm_client_chat() {
-    // This is a placeholder test that would need mocking to properly test
     let _client = LlmClient::new("test-api-key".to_string(), "test-model".to_string());
-
-    // This test would be enhanced with mocking in the future
-    // We're just testing that the code compiles for now
 }
 
 #[test]
@@ -72,7 +61,6 @@ fn test_completion_request_serialization() {
     assert_eq!(json["messages"][1]["role"], "user");
     assert_eq!(json["messages"][1]["content"], "Hello");
 
-    // For floating-point comparisons, check that the value exists and is approximately correct
     assert!(json["temperature"].is_number());
     if let Value::Number(temp) = &json["temperature"] {
         let temp_f64 = temp.as_f64().unwrap();

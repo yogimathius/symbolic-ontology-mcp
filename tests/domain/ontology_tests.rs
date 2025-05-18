@@ -44,14 +44,11 @@ fn test_add_and_get_symbol() {
     let retrieved = symbol_set.get_symbol("water").unwrap();
     assert_eq!(retrieved.name, "Water");
 
-    // Test replacing a symbol
     let new_water = create_test_symbol("water", "Water (Updated)", "dream");
     symbol_set.add_symbol(new_water);
 
-    // Should still have 2 symbols
     assert_eq!(symbol_set.count(), 2);
 
-    // But the water symbol should be updated
     let updated = symbol_set.get_symbol("water").unwrap();
     assert_eq!(updated.name, "Water (Updated)");
 }
@@ -93,7 +90,6 @@ fn test_search() {
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].id, "water");
 
-    // Search is case-insensitive
     let results = symbol_set.search("WATER");
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].id, "water");
@@ -119,7 +115,6 @@ fn test_filter_by_category() {
     let myth_symbols = symbol_set.filter_by_category("mythological");
     assert_eq!(myth_symbols.len(), 2);
 
-    // Check empty result for non-existent category
     let empty = symbol_set.filter_by_category("nonexistent");
     assert_eq!(empty.len(), 0);
 }

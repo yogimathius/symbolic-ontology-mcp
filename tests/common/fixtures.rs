@@ -1,6 +1,5 @@
 use dream_ontology_mcp::domain::{Symbol, SymbolSet};
 
-/// Create a test symbol with basic properties
 pub fn create_test_symbol(id: &str, name: &str, category: &str) -> Symbol {
     Symbol::new(
         id.to_string(),
@@ -10,7 +9,6 @@ pub fn create_test_symbol(id: &str, name: &str, category: &str) -> Symbol {
     )
 }
 
-/// Create a test symbol with additional properties
 pub fn create_detailed_symbol(
     id: &str,
     name: &str,
@@ -26,12 +24,10 @@ pub fn create_detailed_symbol(
         description.to_string(),
     );
 
-    // Add interpretations
     for (context, interpretation) in interpretations {
         symbol.add_interpretation(context.to_string(), interpretation.to_string());
     }
 
-    // Add related symbols
     for related in related_symbols {
         symbol.add_related_symbol(related.to_string());
     }
@@ -39,7 +35,6 @@ pub fn create_detailed_symbol(
     symbol
 }
 
-/// Create a test symbol set with sample symbols
 pub fn create_test_symbol_set(
     id: &str,
     name: &str,
@@ -53,7 +48,6 @@ pub fn create_test_symbol_set(
         description.to_string(),
     );
 
-    // Add some sample symbols
     symbol_set.add_symbol(create_test_symbol("water", "Water", "dream"));
     symbol_set.add_symbol(create_test_symbol("fire", "Fire", "dream"));
     symbol_set.add_symbol(create_test_symbol("mountain", "Mountain", "dream"));
@@ -61,7 +55,6 @@ pub fn create_test_symbol_set(
     symbol_set
 }
 
-/// Create a populated dream symbols set
 pub fn create_dream_symbols() -> SymbolSet {
     let mut symbol_set = SymbolSet::new(
         "dream-symbols".to_string(),
@@ -70,7 +63,6 @@ pub fn create_dream_symbols() -> SymbolSet {
         "Common symbols appearing in dreams".to_string(),
     );
 
-    // Water symbol with interpretations
     let water = create_detailed_symbol(
         "water",
         "Water",
@@ -86,7 +78,6 @@ pub fn create_dream_symbols() -> SymbolSet {
         vec!["ocean", "river"],
     );
 
-    // Fire symbol with interpretations
     let fire = create_detailed_symbol(
         "fire",
         "Fire",
@@ -99,7 +90,6 @@ pub fn create_dream_symbols() -> SymbolSet {
         vec!["light", "sun"],
     );
 
-    // Add symbols to the set
     symbol_set.add_symbol(water);
     symbol_set.add_symbol(fire);
 

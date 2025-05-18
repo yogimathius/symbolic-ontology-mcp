@@ -2,14 +2,13 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-use dream_ontology_mcp::domain::{
-    RepositoryError, RepositoryFactory, RepositoryResult, Symbol, SymbolRepository, SymbolSet,
-    SymbolSetRepository,
+use dream_ontology_mcp::db::repository::interfaces::{
+    RepositoryError, RepositoryResult, SymbolRepository, SymbolSetRepository,
 };
+use dream_ontology_mcp::domain::{Symbol, SymbolSet};
 
 use super::fixtures;
 
-/// Mock repository that allows customizing behavior for tests
 pub struct MockSymbolRepository {
     symbols: Arc<RwLock<HashMap<String, Symbol>>>,
     fail_next_operation: Arc<RwLock<Option<RepositoryError>>>,
@@ -38,12 +37,10 @@ impl MockSymbolRepository {
         self
     }
 
-    /// Makes the next repository operation fail with the specified error
     pub fn fail_next(&self, error: RepositoryError) {
         *self.fail_next_operation.write().unwrap() = Some(error);
     }
 
-    /// Helper to check and consume the next failure if one is set
     fn check_failure(&self) -> Result<(), RepositoryError> {
         let mut fail_guard = self.fail_next_operation.write().unwrap();
         if let Some(err) = fail_guard.take() {
@@ -150,7 +147,6 @@ impl SymbolRepository for MockSymbolRepository {
     }
 }
 
-/// Mock SymbolSet repository for testing
 pub struct MockSymbolSetRepository {
     symbol_sets: Arc<RwLock<HashMap<String, SymbolSet>>>,
     fail_next_operation: Arc<RwLock<Option<RepositoryError>>>,
@@ -188,12 +184,10 @@ impl MockSymbolSetRepository {
         self
     }
 
-    /// Makes the next repository operation fail with the specified error
     pub fn fail_next(&self, error: RepositoryError) {
         *self.fail_next_operation.write().unwrap() = Some(error);
     }
 
-    /// Helper to check and consume the next failure if one is set
     fn check_failure(&self) -> Result<(), RepositoryError> {
         let mut fail_guard = self.fail_next_operation.write().unwrap();
         if let Some(err) = fail_guard.take() {
@@ -299,7 +293,6 @@ impl SymbolSetRepository for MockSymbolSetRepository {
     }
 }
 
-/// Mock repository factory for testing
 pub struct MockRepositoryFactory {
     symbol_repository: Arc<MockSymbolRepository>,
     symbol_set_repository: Arc<MockSymbolSetRepository>,
@@ -314,7 +307,6 @@ impl MockRepositoryFactory {
     }
 
     pub fn with_test_data(self) -> Self {
-        // Create new instances with test data
         let symbol_repo = MockSymbolRepository::new().with_test_data();
         let symbol_set_repo = MockSymbolSetRepository::new().with_test_data();
 
@@ -322,15 +314,5 @@ impl MockRepositoryFactory {
             symbol_repository: Arc::new(symbol_repo),
             symbol_set_repository: Arc::new(symbol_set_repo),
         }
-    }
-}
-
-impl RepositoryFactory for MockRepositoryFactory {
-    fn create_symbol_repository(&self) -> Arc<dyn SymbolRepository> {
-        self.symbol_repository.clone()
-    }
-
-    fn create_symbol_set_repository(&self) -> Arc<dyn SymbolSetRepository> {
-        self.symbol_set_repository.clone()
     }
 }

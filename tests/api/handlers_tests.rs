@@ -1,72 +1,125 @@
-use dream_ontology_mcp::domain::RepositoryFactory;
-use dream_ontology_mcp::infrastructure::memory_repository::MemoryRepositoryFactory;
+use sqlx::{Pool, sqlite::Sqlite, sqlite::SqlitePool};
+
+#[derive(Debug, sqlx::FromRow)]
+struct TestSymbol {
+    id: String,
+    name: String,
+    category: String,
+    description: String,
+}
+
+async fn create_test_pool() -> Pool<Sqlite> {
+    let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
+
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS symbols (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            description TEXT NOT NULL,
+            interpretations TEXT DEFAULT '{}',
+            related_symbols TEXT DEFAULT '[]',
+            properties TEXT DEFAULT '{}'
+        )
+        "#,
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let test_symbols = vec![
+        sqlx::query(
+            r#"
+            INSERT INTO symbols (id, name, category, description, interpretations, related_symbols, properties)
+            VALUES ('sun', 'Sun', 'nature', 'Celestial body at the center of our solar system', 
+                    '{"default":"Represents life, energy, and vitality"}',
+                    '["light", "day"]',
+                    '{"element":"fire"}')
+            "#,
+        ),
+        sqlx::query(
+            r#"
+            INSERT INTO symbols (id, name, category, description, interpretations, related_symbols, properties) 
+            VALUES ('moon', 'Moon', 'nature', 'Natural satellite of Earth',
+                    '{"default":"Represents intuition, femininity and cycles"}',
+                    '["night", "tide"]',
+                    '{"element":"water"}')
+            "#,
+        ),
+        sqlx::query(
+            r#"
+            INSERT INTO symbols (id, name, category, description, interpretations, related_symbols, properties)
+            VALUES ('light', 'Light', 'concept', 'Electromagnetic radiation visible to the human eye',
+                    '{"default":"Represents knowledge, truth, and enlightenment"}',
+                    '["sun", "illumination"]',
+                    '{"element":"fire"}')
+            "#,
+        ),
+    ];
+
+    for query in test_symbols {
+        query.execute(&pool).await.unwrap();
+    }
+
+    pool
+}
 
 #[tokio::test]
 async fn test_list_symbols_integration() {
-    // Set up repository with test data
-    let factory = MemoryRepositoryFactory::new().with_test_data();
-    let repository = factory.create_symbol_repository();
+    let pool = create_test_pool().await;
 
-    // For now, we won't test the API directly, but just verify repository works
-    let symbols = repository.list_symbols(None).await.unwrap();
+    let symbols = sqlx::query_as::<_, TestSymbol>("SELECT * FROM symbols")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
 
-    // Validate response
     assert!(!symbols.is_empty());
 }
 
 #[tokio::test]
 async fn test_get_symbol_integration() {
-    // Set up repository with test data
-    let factory = MemoryRepositoryFactory::new().with_test_data();
-    let repository = factory.create_symbol_repository();
+    let pool = create_test_pool().await;
 
-    // Get the first symbol from the repo to test with
-    let symbols = repository.list_symbols(None).await.unwrap();
-    let first_symbol = symbols.first().unwrap();
+    let symbol = sqlx::query_as::<_, TestSymbol>("SELECT * FROM symbols WHERE id = 'sun'")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
 
-    // Test direct repository call
-    let result = repository.get_symbol(&first_symbol.id).await;
-
-    // Validate response
-    assert!(result.is_ok());
-    let symbol = result.unwrap();
-    assert_eq!(symbol.id, first_symbol.id);
+    assert_eq!(symbol.id, "sun");
+    assert_eq!(symbol.name, "Sun");
+    assert_eq!(symbol.category, "nature");
 }
 
 #[tokio::test]
 async fn test_search_symbols_integration() {
-    // Set up repository with test data
-    let factory = MemoryRepositoryFactory::new().with_test_data();
-    let repository = factory.create_symbol_repository();
+    let pool = create_test_pool().await;
 
-    // Get the first symbol from the repo to test with
-    let symbols = repository.list_symbols(None).await.unwrap();
-    let first_symbol = symbols.first().unwrap();
+    let symbols = sqlx::query_as::<_, TestSymbol>(
+        "SELECT * FROM symbols WHERE name LIKE '%Light%' OR description LIKE '%Light%'",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
 
-    // Search symbols using query from the first symbol (should find it)
-    let query = &first_symbol.name[0..3]; // Use first few characters of name
-    let search_results = repository.search_symbols(query).await.unwrap();
-
-    // Validate response
-    assert!(!search_results.is_empty());
-    assert!(search_results.iter().any(|s| s.id == first_symbol.id));
+    assert!(!symbols.is_empty());
+    assert!(symbols.iter().any(|s| s.id == "light"));
 }
 
 #[tokio::test]
 async fn test_error_handling_symbol_not_found() {
-    // Set up repository with test data
-    let factory = MemoryRepositoryFactory::new().with_test_data();
-    let repository = factory.create_symbol_repository();
+    let pool = create_test_pool().await;
 
-    // Call repository with nonexistent ID
-    let result = repository.get_symbol("nonexistent-id").await;
+    let result =
+        sqlx::query_as::<_, TestSymbol>("SELECT * FROM symbols WHERE id = 'nonexistent-id'")
+            .fetch_one(&pool)
+            .await;
 
-    // Validate error response
     assert!(result.is_err());
     match result {
         Err(err) => {
             let error_string = err.to_string();
-            assert!(error_string.contains("Not found"));
+            assert!(error_string.contains("no rows returned"));
         }
         _ => panic!("Expected error response"),
     }

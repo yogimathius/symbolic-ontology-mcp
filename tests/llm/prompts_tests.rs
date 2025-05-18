@@ -14,7 +14,6 @@ fn test_build_system_prompt() {
 fn test_build_symbol_prompt_basic() {
     let symbol = fixtures::create_test_symbol("water", "Water", "dream");
 
-    // Test with no context or query
     let basic_prompt = build_symbol_prompt(&symbol, None, None);
     assert!(basic_prompt.contains("Water"));
     assert!(basic_prompt.contains("Description for Water"));
@@ -26,7 +25,6 @@ fn test_build_symbol_prompt_basic() {
 fn test_build_symbol_prompt_detailed() {
     let symbol = fixtures::create_test_symbol("water", "Water", "dream");
 
-    // Test with context and query
     let detailed_prompt = build_symbol_prompt(
         &symbol,
         Some("recurring nightmares"),
@@ -55,7 +53,6 @@ fn test_build_symbol_prompt_structure() {
 
     let prompt = build_symbol_prompt(&symbol, None, None);
 
-    // Check for structured format sections
     assert!(prompt.contains("Core symbolic meaning"));
     assert!(prompt.contains("Psychological significance"));
     assert!(prompt.contains("Cultural and historical context"));
