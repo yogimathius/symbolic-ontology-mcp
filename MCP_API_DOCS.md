@@ -10,7 +10,7 @@ Due to a known issue with optional parameters in the MCP protocol implementation
 
 - Use `search_symbols` for text-based searches
 - Use `filter_by_category` for category filtering
-- Use `get_symbols` for listing all symbols or with simple category filtering
+- Use `get_symbols` for listing all symbols (without filters)
 - Use `get_categories` to retrieve all available categories
 
 ## Available Endpoints
@@ -47,13 +47,12 @@ search_symbols(query: "water", limit: 10)
 filter_by_category(category: "nature", limit: 10)
 ```
 
-### 3. `get_symbols` (For Listing All or Simple Category Filtering)
+### 3. `get_symbols` (For Listing All Symbols)
 
-**Description:** List all symbols or filter by category.
+**Description:** List all symbols (without filtering).
 
 **Parameters:**
 
-- `category` (optional): Category name to filter by
 - `limit` (optional): Maximum number of results to return (default: 50)
 
 **Example:**
@@ -61,12 +60,9 @@ filter_by_category(category: "nature", limit: 10)
 ```
 // Get all symbols
 get_symbols(limit: 20)
-
-// Get symbols from a category
-get_symbols(category: "mythological", limit: 15)
 ```
 
-**Note:** For text search, use `search_symbols` instead. The `query` parameter in `get_symbols` may not work reliably with all MCP clients due to optional parameter handling issues.
+**Note:** The implementation has issues with the optional `category` parameter. For category filtering, please use the `filter_by_category` endpoint instead.
 
 ### 4. `get_categories` (For Retrieving Available Categories)
 
@@ -115,8 +111,8 @@ For `get_categories`, the response format is:
 If you encounter issues with parameter handling:
 
 1. Always use the specialized endpoints for each query type
-2. For text searches, use `search_symbols` instead of `get_symbols` with a query parameter
-3. For category filtering, use either `filter_by_category` or `get_symbols` with a category parameter
+2. For text searches, use `search_symbols` instead of `get_symbols`
+3. For category filtering, use `filter_by_category` instead of `get_symbols`
 4. If parameters are not being recognized correctly, try the specialized endpoints with non-optional parameters
 
 ## Examples for Common Use Cases

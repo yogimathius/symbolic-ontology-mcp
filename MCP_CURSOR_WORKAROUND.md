@@ -2,10 +2,10 @@
 
 ## Issue Description
 
-When using the Cursor MCP client with our `get_symbols` endpoint, there's a problem with optional string parameters (`Option<String>`). The client returns an error when trying to use the `query` or `category` parameters:
+When using the Cursor MCP client with our API, there's a problem with optional string parameters (`Option<String>`). The client returns an error when trying to use optional parameters:
 
 ```
-Error calling tool: Parameter 'query' must be of type string,null, got string
+Error calling tool: Parameter 'category' must be of type string,null, got string
 ```
 
 ## Details
@@ -17,20 +17,21 @@ Error calling tool: Parameter 'query' must be of type string,null, got string
 
 ## Workaround Implementation
 
-To work around this issue, we've implemented additional methods that use non-optional parameters:
+To work around this issue, we've implemented dedicated methods with non-optional parameters:
 
 1. `search_symbols` - A method that takes a required `query` parameter
 2. `filter_by_category` - A method that takes a required `category` parameter
+3. `get_symbols` - A simplified method that no longer takes a category parameter
 
-### Original Method:
+### Original Method (Modified):
 
 ```rust
-#[tool(description = "Get symbols from the ontology with optional filtering")]
+#[tool(description = "List all symbols (without filtering)")]
 async fn get_symbols(
     &self,
     #[tool(aggr)] params: GetSymbolsParams,
 ) -> Result<CallToolResult, rmcp::Error> {
-    // Implementation using optional parameters
+    // Implementation with no category parameter
 }
 ```
 
@@ -58,15 +59,16 @@ async fn filter_by_category(
 
 When working with Cursor's MCP client:
 
-1. For searches, use the `search_symbols` method instead of the general `get_symbols` method
+1. For searches, use the `search_symbols` method
 2. For category filtering, use the `filter_by_category` method
-3. For simple listing with just a limit, you can continue to use the original `get_symbols` method
+3. For simple listing with just a limit, use the `get_symbols` method
 
 Example:
 
 ```
 mcp_symbol_ontology_search_symbols(query="water", limit=5)
 mcp_symbol_ontology_filter_by_category(category="nature", limit=3)
+mcp_symbol_ontology_get_symbols(limit=10)
 ```
 
 ## Future Considerations
@@ -74,7 +76,7 @@ mcp_symbol_ontology_filter_by_category(category="nature", limit=3)
 This workaround is temporary until the issue is resolved in the Cursor MCP client. Once the issue is fixed, we can consider:
 
 1. Keeping these methods for backward compatibility
-2. Deprecating them in favor of the more general `get_symbols` method
+2. Restoring optional parameters to the `get_symbols` method
 3. Documenting the change for users
 
 ## References

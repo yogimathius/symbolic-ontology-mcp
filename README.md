@@ -149,6 +149,37 @@ cargo test
 cargo test domain::symbols
 ```
 
+## Test Coverage
+
+The project uses cargo-tarpaulin for test coverage analysis.
+
+### Prerequisites
+
+Install cargo-tarpaulin:
+
+```bash
+cargo install cargo-tarpaulin
+```
+
+### Running Coverage Reports
+
+Run the coverage script to generate HTML and XML reports:
+
+```bash
+# Generate coverage reports
+./scripts/coverage.sh
+```
+
+This will:
+
+- Generate HTML reports in the `coverage` directory
+- Generate XML reports for CI integration
+- Set a minimum coverage threshold of 70%
+
+### CI Integration
+
+The project includes a GitHub workflow that runs coverage on each push/PR and uploads results to Codecov.
+
 ## MCP Integration
 
 The MCP server can be used with Claude Desktop or any other MCP-compatible client.
