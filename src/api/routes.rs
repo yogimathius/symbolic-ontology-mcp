@@ -4,24 +4,25 @@ use axum::{
 };
 use sqlx::PgPool;
 
-use super::{handlers, state::AppState};
+use super::{handlers::*, state::AppState};
 
 pub fn router(db_pool: PgPool) -> Router {
     let app_state = AppState::new(db_pool.clone());
 
     let repository_api = Router::new()
-        .route("/symbols", get(handlers::repo_list_symbols))
-        .route("/symbols/{id}", get(handlers::repo_get_symbol))
-        .route("/symbols/{id}", post(handlers::repo_update_symbol))
-        .route("/symbols", post(handlers::repo_create_symbol))
-        .route("/symbols/{id}", delete(handlers::repo_delete_symbol))
-        .route("/symbols/{id}/related", post(handlers::add_related_symbol))
-        .route("/symbol-sets", get(handlers::list_symbol_sets))
-        .route("/symbol-sets/{id}", get(handlers::get_symbol_set))
-        .route("/symbol-sets/search", get(handlers::search_symbol_sets))
-        .route("/symbol-sets", post(handlers::create_symbol_set))
-        .route("/symbol-sets/{id}", post(handlers::update_symbol_set))
-        .route("/symbol-sets/{id}", delete(handlers::delete_symbol_set))
+        .route("/symbols", get(repo_list_symbols))
+        .route("/symbols/{id}", get(repo_get_symbol))
+        .route("/symbols/{id}", post(repo_update_symbol))
+        .route("/symbols", post(repo_create_symbol))
+        .route("/symbols/{id}", delete(repo_delete_symbol))
+        .route("/symbols/{id}/related", post(add_related_symbol))
+        .route("/categories", get(get_categories))
+        .route("/symbol-sets", get(list_symbol_sets))
+        .route("/symbol-sets/{id}", get(get_symbol_set))
+        .route("/symbol-sets/search", get(search_symbol_sets))
+        .route("/symbol-sets", post(create_symbol_set))
+        .route("/symbol-sets/{id}", post(update_symbol_set))
+        .route("/symbol-sets/{id}", delete(delete_symbol_set))
         .with_state(app_state);
 
     repository_api

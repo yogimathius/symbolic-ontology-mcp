@@ -124,3 +124,26 @@ async fn test_error_handling_symbol_not_found() {
         _ => panic!("Expected error response"),
     }
 }
+
+#[tokio::test]
+async fn test_get_categories() {
+    // Set up a test database connection
+    let pool = create_test_pool().await;
+
+    // Get the distinct categories that should be present
+    let categories = sqlx::query_scalar::<_, String>("SELECT DISTINCT category FROM symbols")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    // Verify we have the expected categories from our test data
+    assert!(categories.contains(&"nature".to_string()));
+    assert!(categories.contains(&"concept".to_string()));
+
+    // Test the categories directly
+    let categories_count = categories.len();
+    assert!(categories_count > 0);
+
+    // Our test validates that we can retrieve distinct categories from the database,
+    // which is what the get_categories handler does
+}

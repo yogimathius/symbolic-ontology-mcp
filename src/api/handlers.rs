@@ -182,8 +182,8 @@ pub struct CategoriesResponse {
     pub total_count: usize,
 }
 
-pub async fn get_categories(State(pool): State<PgPool>) -> ApiResult<Json<CategoriesResponse>> {
-    let symbols = SymbolQueries::list(&pool, None).await?;
+pub async fn get_categories(State(state): State<AppState>) -> ApiResult<Json<CategoriesResponse>> {
+    let symbols = state.symbol_repository.list_symbols(None).await?;
 
     let categories: Vec<String> = symbols
         .iter()
