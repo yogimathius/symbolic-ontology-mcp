@@ -6,7 +6,7 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 
 - A private core library (`ontology-core`)
 - A private API server (`ontology-api-server`)
-- A public MCP client (`dream-mcp-client`)
+- A public MCP client (`symbol-mcp-client`) (renamed from `symbol-mcp-client`)
 
 ## Goals
 
@@ -15,6 +15,7 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 - Provide a minimal public client for MCP integration
 - Support license verification and tiered access
 - Make the client easily installable via `cargo install`
+- Remove all dream-specific terminology to make this a pure symbolic ontology
 
 ## Implementation Checklist
 
@@ -45,7 +46,7 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 
 ### Phase 4: MCP Client Implementation
 
-- [ ] Create minimal MCP client binary in `dream-mcp-client`
+- [ ] Create minimal MCP client binary in `symbol-mcp-client` (renamed)
 - [ ] Implement connection to API service
 - [ ] Add license verification
 - [ ] Create MCP service interface
@@ -64,6 +65,18 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 - [ ] Publish client crate to cargo
 - [ ] Update documentation with installation instructions
 
+### Phase 7: Terminology Refactoring
+
+- [ ] Rename `symbol-mcp-client` directory to `symbol-mcp-client`
+- [ ] Update all imports and references in code
+- [ ] Rename all dream-specific struct names and variables
+- [ ] Change all default category values from "dream" to "symbol" or "general"
+- [ ] Update documentation to remove dream-specific terminology
+- [ ] Update function and method names that reference dreams
+- [ ] Revise test fixtures to use general symbol examples
+- [ ] Rename imports and crate references
+- [ ] Update CLI help text and environment variable names
+
 ## Migration Strategy
 
 1. Keep existing code intact until new structure is tested
@@ -71,6 +84,7 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 3. Test each component thoroughly after migration
 4. Switch to new structure only when everything is working
 5. Remove deprecated code after successful migration
+6. Complete terminology refactoring as a final step
 
 ## Next Steps
 
@@ -78,3 +92,4 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 2. Extract database logic from main crate
 3. Implement basic API server with authentication
 4. Develop MCP client with API integration
+5. Start terminology refactoring in parallel

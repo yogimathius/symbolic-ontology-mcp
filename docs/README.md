@@ -1,6 +1,6 @@
-# Dream Ontology MCP Project Documentation
+# Symbol Ontology MCP Project Documentation
 
-This directory contains documentation for the Dream Ontology MCP (Model Context Protocol) project, a Rust-based symbolic reasoning engine that implements the Model Context Protocol.
+This directory contains documentation for the Symbol Ontology MCP (Model Context Protocol) project, a Rust-based symbolic reasoning engine that implements the Model Context Protocol.
 
 ## Current Documentation
 
