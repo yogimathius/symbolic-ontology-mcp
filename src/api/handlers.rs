@@ -4,17 +4,11 @@ use axum::{
     http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 
 use super::error::{ApiError, ApiResult};
 use super::state::AppState;
 use crate::db::models::Symbol;
-use crate::db::queries::SymbolQueries;
 use crate::domain::{Symbol as DomainSymbol, SymbolSet};
-
-pub async fn health_check() -> &'static str {
-    "Dream Ontology MCP API is healthy"
-}
 
 #[derive(Serialize)]
 pub struct SymbolsResponse {
@@ -32,148 +26,6 @@ pub struct ListSymbolsQuery {
 
 fn default_limit() -> usize {
     50
-}
-
-pub async fn list_symbols(
-    State(pool): State<PgPool>,
-    Query(params): Query<ListSymbolsQuery>,
-) -> ApiResult<Json<SymbolsResponse>> {
-    if let Some(ref query) = params.query {
-        if query.trim().is_empty() {
-            return Err(ApiError::BadRequest(
-                "Search query cannot be empty".to_string(),
-            ));
-        }
-    }
-
-    if let Some(ref category) = params.category {
-        if category.trim().is_empty() {
-            return Err(ApiError::BadRequest("Category cannot be empty".to_string()));
-        }
-    }
-
-    let symbols = match (params.category.as_deref(), params.query.as_deref()) {
-        (_, Some(query)) => SymbolQueries::search(&pool, query).await?,
-        (Some(category), None) => SymbolQueries::list(&pool, Some(category)).await?,
-        (None, None) => SymbolQueries::list(&pool, None).await?,
-    };
-
-    let total_count = symbols.len();
-    let symbols = symbols.into_iter().take(params.limit).collect();
-
-    Ok(Json(SymbolsResponse {
-        symbols,
-        total_count,
-    }))
-}
-
-pub async fn get_symbol(
-    Path(id): Path<String>,
-    State(pool): State<PgPool>,
-) -> ApiResult<Json<Symbol>> {
-    if id.trim().is_empty() {
-        return Err(ApiError::BadRequest(
-            "Symbol ID cannot be empty".to_string(),
-        ));
-    }
-
-    let symbol = SymbolQueries::get_by_id(&pool, &id).await?;
-    Ok(Json(symbol))
-}
-
-#[derive(Deserialize)]
-pub struct InterpretRequest {
-    pub symbol_id: String,
-    pub context: Option<String>,
-}
-
-#[derive(Serialize)]
-pub struct InterpretResponse {
-    pub symbol: Symbol,
-    pub interpretation: String,
-}
-
-fn validate_interpret_request(request: &InterpretRequest) -> Result<(), ApiError> {
-    if request.symbol_id.trim().is_empty() {
-        return Err(ApiError::BadRequest(
-            "Symbol ID cannot be empty".to_string(),
-        ));
-    }
-    Ok(())
-}
-
-pub async fn interpret_symbol(
-    State(pool): State<PgPool>,
-    Json(request): Json<InterpretRequest>,
-) -> ApiResult<Json<InterpretResponse>> {
-    validate_interpret_request(&request)?;
-
-    let symbol = SymbolQueries::get_by_id(&pool, &request.symbol_id).await?;
-
-    let interpretation = match &request.context {
-        Some(context) => format!(
-            "Symbol interpretation for '{}' in context '{}': {}",
-            symbol.name, context, symbol.description
-        ),
-        None => format!(
-            "General interpretation for '{}': {}",
-            symbol.name, symbol.description
-        ),
-    };
-
-    Ok(Json(InterpretResponse {
-        symbol,
-        interpretation,
-    }))
-}
-
-#[derive(Serialize)]
-pub struct RelatedSymbolsResponse {
-    pub symbols: Vec<Symbol>,
-    pub total_count: usize,
-}
-
-pub async fn get_related_symbols(
-    Path(id): Path<String>,
-    State(pool): State<PgPool>,
-) -> ApiResult<Json<RelatedSymbolsResponse>> {
-    if id.trim().is_empty() {
-        return Err(ApiError::BadRequest(
-            "Symbol ID cannot be empty".to_string(),
-        ));
-    }
-
-    let base_symbol = SymbolQueries::get_by_id(&pool, &id).await?;
-
-    if base_symbol.related_symbols.is_empty() {
-        return Ok(Json(RelatedSymbolsResponse {
-            symbols: Vec::new(),
-            total_count: 0,
-        }));
-    }
-
-    let mut related_symbols = Vec::new();
-
-    for related_id in &base_symbol.related_symbols {
-        match SymbolQueries::get_by_id(&pool, related_id).await {
-            Ok(symbol) => {
-                related_symbols.push(symbol);
-            }
-            Err(crate::db::pool::DbError::NotFound) => {
-                continue;
-            }
-            Err(err) => {
-                return Err(ApiError::from(err));
-            }
-        }
-    }
-
-    let total_count = related_symbols.len();
-
-    Ok(Json(RelatedSymbolsResponse {
-        symbols: related_symbols,
-        total_count,
-    }))
 }
 
 #[derive(Serialize)]

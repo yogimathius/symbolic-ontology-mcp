@@ -1,15 +1,30 @@
 # Dream Ontology MCP Server
 
-A symbolic reasoning engine built in Rust that serves as an MCP-compliant server for dream and symbolic ontology.
+A symbolic reasoning engine built in Rust that serves as an MCP-compliant server for dream and symbolic ontology. This server enables applications to query and reason about dream symbols, their meanings, and their relationships.
+
+## Project Status
+
+**✅ Status: Feature Complete for v1.5/2**
+
+The Dream Ontology MCP Server is now feature complete for version 1.5/2, with:
+
+- Core domain model implementation
+- Data storage with both in-memory and PostgreSQL support
+- MCP protocol implementation with multiple methods
+- HTTP API with Axum
+- Data seeding capabilities
+- Comprehensive test coverage
+
+The production server is deployed at: `symbolic-grounding-api.fly.dev`
 
 ## Architecture
 
-The Dream Ontology project consists of two separate components in this repository:
+The Dream Ontology project consists of two separate components:
 
 1. **REST API Server**: Provides HTTP endpoints for accessing the symbol ontology
 2. **MCP Server**: Implements the Model Context Protocol for integration with LLM agents
 
-This separation follows the architecture described in [docs/architecture/architecture.md](docs/architecture/architecture.md), allowing both traditional API access and MCP-based integration.
+This separation allows both traditional API access and MCP-based integration.
 
 ```
 ┌─────────────────────┐               ┌─────────────────────┐
@@ -26,6 +41,14 @@ This separation follows the architecture described in [docs/architecture/archite
 │   (src/bin/mcp_server.rs)│
 └─────────────────────┘
 ```
+
+### Core Features
+
+- **Symbol and SymbolSet Domain Models**: Fully implemented with properties for id, name, category, description, interpretations, and related symbols
+- **Repository Pattern**: Clean separation between domain logic and data storage
+- **MCP Protocol Implementation**: Compliant with the Model Context Protocol for LLM tool use
+- **Vector Embedding Support**: (PostgreSQL) For semantic search capabilities
+- **Data Seeding**: Tools to populate the database with dream symbols
 
 ## Getting Started
 
@@ -57,8 +80,6 @@ The Dream Ontology Server supports two storage backends:
 
 The in-memory repository is enabled by default and requires no additional setup.
 
-<!-- Not implemented -->
-
 #### Using PostgreSQL with pgvector
 
 1. Start a PostgreSQL instance with pgvector using Docker Compose:
@@ -74,7 +95,7 @@ docker-compose up -d
 # Set to "false" to use PostgreSQL
 USE_MEMORY_REPOSITORY=false
 
-# Uncomment the DATABASE_URL
+# Database connection string
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/symbol_ontology
 ```
 
@@ -84,19 +105,9 @@ The server will automatically:
 - Enable the pgvector extension
 - Seed test data (in development mode)
 
-#### Vector Embedding Support
-
-The PostgreSQL implementation includes support for vector embeddings:
-
-- Symbols can have 384-dimensional vector embeddings
-- Vector similarity search is available for finding related symbols
-- This follows the architecture in [docs/architecture/vector-db-architecture.md](docs/architecture/vector-db-architecture.md)
-
 ## Running the Services
 
 ### REST API Server
-
-The REST API server provides HTTP endpoints for accessing the symbol ontology:
 
 ```bash
 # Run the API server
@@ -113,8 +124,6 @@ Available endpoints:
 
 ### MCP Server
 
-The MCP server implements the Model Context Protocol for integration with LLM agents:
-
 ```bash
 # Run the MCP server
 cargo run --bin mcp_server
@@ -122,69 +131,137 @@ cargo run --bin mcp_server
 # The server will start at http://127.0.0.1:3001
 ```
 
-Available MCP tools:
+## MCP API Documentation
 
-- `get_symbols` - Get symbols from the ontology with optional filtering
-- More tools coming soon!
+The Symbol Ontology MCP API provides several methods for searching and retrieving dream symbols and their interpretations.
 
-### Running Both Services
+### Important Note on Parameter Handling
 
-For development, you can run both services simultaneously:
+Due to a known issue with optional parameters in the MCP protocol implementation, this API provides specialized endpoints for different query types:
 
-```bash
-# In one terminal
-cargo run
+- Use `search_symbols` for text-based searches
+- Use `filter_by_category` for category filtering
+- Use `get_symbols` for listing all symbols (without filters)
+- Use `get_categories` to retrieve all available categories
 
-# In another terminal
-cargo run --bin mcp_server
+### Available MCP Methods
+
+#### 1. `search_symbols`
+
+**Description:** Search for symbols matching a text query.
+
+**Parameters:**
+
+- `query` (required): Text to search for in symbol names and descriptions
+- `limit` (optional): Maximum number of results to return (default: 50)
+
+**Example:**
+
+```
+// Search for symbols related to water
+search_symbols(query: "water", limit: 10)
 ```
 
-## Testing
+#### 2. `filter_by_category`
 
-```bash
-# Run all tests
-cargo test
+**Description:** Get symbols belonging to a specific category.
 
-# Run tests for a specific module
-cargo test domain::symbols
+**Parameters:**
+
+- `category` (required): Category name to filter by
+- `limit` (optional): Maximum number of results to return (default: 50)
+
+**Example:**
+
+```
+// Get symbols in the "nature" category
+filter_by_category(category: "nature", limit: 10)
 ```
 
-## Test Coverage
+#### 3. `get_symbols`
 
-The project uses cargo-tarpaulin for test coverage analysis.
+**Description:** List all symbols (without filtering).
 
-### Prerequisites
+**Parameters:**
 
-Install cargo-tarpaulin:
+- `limit` (optional): Maximum number of results to return (default: 50)
 
-```bash
-cargo install cargo-tarpaulin
+**Example:**
+
+```
+// Get all symbols
+get_symbols(limit: 20)
 ```
 
-### Running Coverage Reports
+#### 4. `get_categories`
 
-Run the coverage script to generate HTML and XML reports:
+**Description:** Get a list of all available symbol categories.
 
-```bash
-# Generate coverage reports
-./scripts/coverage.sh
+**Parameters:** None
+
+**Example:**
+
+```
+// Get all available categories
+get_categories()
 ```
 
-This will:
+### Response Format
 
-- Generate HTML reports in the `coverage` directory
-- Generate XML reports for CI integration
-- Set a minimum coverage threshold of 70%
+All symbol-related endpoints return responses in the following format:
 
-### CI Integration
+```json
+{
+  "symbols": [
+    {
+      "id": "water",
+      "name": "Water",
+      "category": "nature",
+      "description": "Symbolizes emotions and the unconscious",
+      "related_symbols": ["ocean", "river", "rain"]
+    }
+    // Additional symbols...
+  ],
+  "total_count": 10
+}
+```
 
-The project includes a GitHub workflow that runs coverage on each push/PR and uploads results to Codecov.
+For `get_categories`, the response format is:
 
-## MCP Integration
+```json
+{
+  "categories": ["animal", "nature", "mythological", "jungian"],
+  "count": 4
+}
+```
+
+## MCP Integration with Clients
 
 The MCP server can be used with Claude Desktop or any other MCP-compatible client.
 
-To configure Claude Desktop to use this server:
+### Using the Deployed Server
+
+To use the production MCP server deployed at `symbolic-grounding-api.fly.dev`:
+
+1. Add this to your MCP client configuration:
+
+```json
+{
+  "tool_servers": [
+    {
+      "name": "DreamOntology",
+      "transport": {
+        "type": "sse",
+        "url": "https://symbolic-grounding-api.fly.dev"
+      }
+    }
+  ]
+}
+```
+
+### Using a Local Server
+
+To configure Claude Desktop to use a local MCP server:
 
 1. Add this to your `claude_desktop_config.json`:
 
@@ -202,19 +279,100 @@ To configure Claude Desktop to use this server:
 }
 ```
 
-## Database Seeder
+## Testing
 
-The project includes database seeding tools to populate your database with dream symbols from various datasets. For detailed instructions, see [README_SEEDER.md](README_SEEDER.md).
+```bash
+# Run all tests
+cargo test
 
-Quick start:
+# Run tests for a specific module
+cargo test domain::symbols
+```
+
+### Test Coverage
+
+The project uses cargo-tarpaulin for test coverage analysis.
+
+#### Prerequisites
+
+Install cargo-tarpaulin:
+
+```bash
+cargo install cargo-tarpaulin
+```
+
+#### Running Coverage Reports
+
+Run the coverage script to generate HTML and XML reports:
+
+```bash
+# Generate coverage reports
+./scripts/coverage.sh
+```
+
+This will:
+
+- Generate HTML reports in the `coverage` directory
+- Generate XML reports for CI integration
+- Set a minimum coverage threshold of 70%
+
+## Database Seeding
+
+The project includes database seeding tools to populate your database with dream symbols:
 
 ```bash
 # Seed with the sample dataset
-cargo run --bin manual_seed data/sample_dream_symbols.csv
+cargo run --bin ontology_seeder data/sample_dream_symbols.csv
 
-# Or seed with Kaggle datasets (after downloading)
-cargo run --bin manual_seed path/to/downloaded/csv
+# Or seed with your own dataset
+cargo run --bin ontology_seeder path/to/your/csv
 ```
+
+## Deployment
+
+The MCP server is deployed to [fly.io](https://fly.io) using the configuration in `fly.toml`. Key configuration aspects include:
+
+- HTTP service on port 3002
+- CORS configuration allowing cross-origin requests
+- Health checks via TCP
+- Auto-scaling configuration
+
+To deploy your own instance:
+
+1. Install the [flyctl](https://fly.io/docs/hands-on/install-flyctl/) command line tool
+2. Log in to fly.io: `flyctl auth login`
+3. Deploy the application: `flyctl deploy`
+
+## Future Milestones
+
+While the project is feature complete for v1.5/2, several areas for future improvement have been identified:
+
+### ✅ Code Cleanup & Error Handling (Completed)
+
+- ✅ Standardized error handling across MCP methods
+- ✅ Refactored duplicated code in MCP method handlers
+- ✅ Improved documentation consistency across modules
+- ✅ Enhanced logging for better debugging and monitoring
+
+### Feature Extensions
+
+- Complete vector embedding support for semantic search
+- Implement proper full-text search capabilities
+- Add caching mechanism for frequently accessed symbols
+- Enhance the repository pattern with more sophisticated queries
+
+### Performance and Scalability
+
+- Optimize connection pooling configuration
+- Implement caching for frequently accessed symbols
+- Enhance full-text search capabilities
+- Add metrics and observability for production monitoring
+
+### Security
+
+- Implement authentication/authorization for API endpoints
+- Add rate limiting for API protection
+- Create versioning strategy for the API
 
 ## License
 
