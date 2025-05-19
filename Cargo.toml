@@ -9,8 +9,8 @@ name = "dream_ontology_mcp"
 path = "src/lib.rs"
 
 [[bin]]
-name = "mcp_server"
-path = "src/bin/mcp_server.rs"
+name = "dream-mcp"
+path = "src/bin/dream_mcp.rs"
 
 [[bin]]
 name = "ontology_seeder"
@@ -24,6 +24,7 @@ path = "tests/lib.rs"
 anyhow = "1.0.98"
 async-trait = "0.1.88"
 axum = "0.8.3"
+axum-macros = "0.5.0"
 clap = { version = "4.4", features = ["derive"] }
 dotenvy = "0.15"
 futures = "0.3.30"
@@ -36,20 +37,24 @@ serde = "1.0.219"
 serde_json = { version = "1.0.140", features = ["preserve_order"] }
 tokio = { version = "1.44.2", features = ["full", "macros"] }
 tokio-stream = "0.1.15"
+tokio-tungstenite = "0.21.0"
 tower-http = { version = "0.6.2", features = ["cors", "trace"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 uuid = { version = "1.7.0", features = ["v4"] }
 # Database dependencies
 sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "json", "uuid", "time", "sqlite"] }
+pgvector = { version = "0.4", features = ["sqlx"] }
 csv = "1.2"
 zip = "0.6"
 tokio-util = { version = "0.7.15", features = ["full"] }
 fern = "0.7.1"
+humantime = "2.2.0"
 log = "0.4.27"
 thiserror = "2.0.12"
 
 [dev-dependencies]
 async-trait = "0.1.88"
+tokio-test = "0.4.4"
 tower = "0.5.2"
 uuid = { version = "1.7.0", features = ["v4"] }
