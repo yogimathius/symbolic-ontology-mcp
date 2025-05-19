@@ -1,25 +1,43 @@
+# Original package information
 [package]
 name = "dream-ontology-mcp"
 version = "0.1.0"
 edition = "2024"
 
-# Add lib section to expose our code for integration tests
+# Define workspace - new configuration
+[workspace]
+members = [
+    ".",                   # Include the root crate
+    "ontology-core",
+    "ontology-api-server",
+    "dream-mcp-client"
+]
+
+# Define workspace-wide properties
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Mathius Johnson <dev@yogimathius.dev>"]
+license = "MPL-2.0 OR Commercial"
+
+# Keep the existing binary and lib definitions, we'll migrate these later
 [lib]
-name = "ontology_api"
+name = "dream_ontology_mcp"
 path = "src/lib.rs"
 
 [[bin]]
-name = "ontology-mcp"
-path = "src/bin/ontology_mcp.rs"
+name = "dream-mcp"
+path = "src/bin/dream_mcp.rs"
 
 [[bin]]
-name = "ontology-seeder"
+name = "ontology_seeder"
 path = "src/bin/ontology_seeder.rs"
 
 [[test]]
 name = "integration"
 path = "tests/lib.rs"
 
+# Keep the existing dependencies for now
 [dependencies]
 anyhow = "1.0.98"
 async-trait = "0.1.88"
