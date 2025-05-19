@@ -1,8 +1,8 @@
-# Dream Ontology System Architecture
+# Symbol Ontology System Architecture
 
 ## System Overview
 
-The Dream Ontology project consists of two separate but complementary services:
+The Symbol Ontology project consists of two separate but complementary services:
 
 1. **Symbolic Ontology MCP Server** (this repository)
 2. **Dream Interpretation MCP Client** (separate repository)
@@ -14,7 +14,7 @@ This architectural separation follows the best practices for Model Context Proto
 ```
 ┌─────────────────────┐               ┌─────────────────────┐               ┌─────────────────────┐
 │                     │               │                     │               │                     │
-│   Dream Ontology    │◄────MCP────►│   Dream Interp.     │◄────API────►│    LLM Provider      │
+│   Symbol Ontology    │◄────MCP────►│   Dream Interp.     │◄────API────►│    LLM Provider      │
 │   MCP Server        │               │   MCP Client        │               │    (OpenRouter)     │
 │   (This Repository) │               │   (Separate Repo)   │               │                     │
 └─────────────────────┘               └─────────────────────┘               └─────────────────────┘

@@ -1,6 +1,6 @@
 # Future Development Items
 
-This document collects features and enhancements planned for future versions of the Dream Ontology MCP Server, beyond the current v1.5 MVP scope.
+This document collects features and enhancements planned for future versions of the Symbol Ontology MCP Server, beyond the current v1.5 MVP scope.
 
 ## Post-MVP Features
 

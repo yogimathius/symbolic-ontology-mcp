@@ -1,13 +1,13 @@
-# Dream Ontology MCP Prompt Templates
+# Symbol Ontology MCP Prompt Templates
 
-This document provides effective prompt templates for interacting with the Dream Ontology MCP server through Claude in Cursor. These templates are designed to help you get the most out of the symbolic reasoning capabilities.
+This document provides effective prompt templates for interacting with the Symbol Ontology MCP server through Claude in Cursor. These templates are designed to help you get the most out of the symbolic reasoning capabilities.
 
 ## Basic Queries
 
 ### Getting All Symbols
 
 ```
-List all the dream symbols available in your ontology.
+List all the symbols available in your ontology.
 ```
 
 ### Symbol Lookup
@@ -105,7 +105,7 @@ What are the underlying principles or organizing structures of your dream ontolo
 ### Knowledge Gaps
 
 ```
-Based on your dream ontology tools, what areas of dream symbolism seem underrepresented or could benefit from further development?
+Based on your dream ontology tools, what areas of symbolism seem underrepresented or could benefit from further development?
 ```
 
 ### Integration Ideas
