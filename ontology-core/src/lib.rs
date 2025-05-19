@@ -4,7 +4,7 @@
 /*!
  * # Ontology Core Library
  *
- * This is the core library for the Dream Ontology project.
+ * This is the core library for the Symbol Ontology project.
  * It contains domain models, database interactions, and shared utilities.
  */
 
@@ -16,4 +16,5 @@ pub mod domain;
 pub mod utils;
 
 // Re-export key components for convenient usage
-pub use domain::Symbol;
+pub use domain::ontology::SymbolSet;
+pub use domain::symbols::Symbol;
