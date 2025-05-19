@@ -14,10 +14,13 @@ categories = ["api-bindings", "command-line-utilities"]
 # publish = true is the default, so no need to specify
 
 [dependencies]
+# Core library (optional with features to minimize public exposure)
+ontology-core = { path = "../ontology-core", optional = true }
+
 # Minimal dependencies needed for the client
 clap = { version = "4.4", features = ["derive", "env"] }
 rmcp = { version = "0.1.5", features = ["client", "transport-sse-server"] }
-tokio = { version = "1.44.2", features = ["rt", "macros", "signal"] }
+tokio = { version = "1.44.2", features = ["rt", "macros", "signal", "full"] }
 tokio-util = { version = "0.7.15", features = ["rt"] }
 reqwest = { version = "0.11", features = ["json"] }
 serde = "1.0.219"
@@ -25,10 +28,18 @@ serde_json = "1.0.140"
 anyhow = "1.0.98"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+thiserror = "1.0"
+http = "1.0.0"
+futures = "0.3.30"
 
 [dev-dependencies]
 assert_cmd = "2.0.13"
 predicates = "3.1.0"
+
+# Features
+[features]
+default = ["local"]
+local = ["ontology-core"] # For local development and testing
 
 # Create a binary
 [[bin]]
