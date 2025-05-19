@@ -646,62 +646,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
-name = "dream-mcp-client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "assert_cmd",
- "clap",
- "predicates",
- "reqwest 0.11.27",
- "rmcp",
- "serde",
- "serde_json",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "dream-ontology-mcp"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "axum",
- "axum-macros",
- "clap",
- "csv",
- "dotenvy",
- "fern",
- "futures",
- "humantime",
- "hyper 1.6.0",
- "hyper-util",
- "log",
- "pgvector",
- "pin-project-lite",
- "reqwest 0.11.27",
- "rmcp",
- "serde",
- "serde_json",
- "sqlx 0.7.4",
- "thiserror 2.0.12",
- "tokio",
- "tokio-stream",
- "tokio-test",
- "tokio-tungstenite",
- "tokio-util",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "uuid",
- "zip",
-]
-
-[[package]]
 name = "dyn-clone"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3094,6 +3038,62 @@ name = "subtle"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
+
+[[package]]
+name = "symbol-mcp-client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "assert_cmd",
+ "clap",
+ "predicates",
+ "reqwest 0.11.27",
+ "rmcp",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "symbol-ontology-mcp"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "axum-macros",
+ "clap",
+ "csv",
+ "dotenvy",
+ "fern",
+ "futures",
+ "humantime",
+ "hyper 1.6.0",
+ "hyper-util",
+ "log",
+ "pgvector",
+ "pin-project-lite",
+ "reqwest 0.11.27",
+ "rmcp",
+ "serde",
+ "serde_json",
+ "sqlx 0.7.4",
+ "thiserror 2.0.12",
+ "tokio",
+ "tokio-stream",
+ "tokio-test",
+ "tokio-tungstenite",
+ "tokio-util",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+ "zip",
+]
 
 [[package]]
 name = "syn"
