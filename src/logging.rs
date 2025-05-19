@@ -20,7 +20,7 @@ use tracing::{Level, info, warn};
 /// ```
 /// use axum::Router;
 /// use axum::routing::get;
-/// use dream_ontology_mcp::logging::trace_layer;
+/// use symbol_ontology_mcp::logging::trace_layer;
 ///
 /// let app = Router::<()>::new()
 ///     .route("/", get(|| async { "Hello, World!" }))

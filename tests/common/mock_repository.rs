@@ -2,10 +2,10 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-use dream_ontology_mcp::db::repository::interfaces::{
+use symbol_ontology_mcp::db::repository::interfaces::{
     RepositoryError, RepositoryResult, SymbolRepository, SymbolSetRepository,
 };
-use dream_ontology_mcp::domain::{Symbol, SymbolSet};
+use symbol_ontology_mcp::domain::{Symbol, SymbolSet};
 
 use super::fixtures;
 

@@ -1,5 +1,5 @@
 use crate::common::fixtures;
-use dream_ontology_mcp::domain::SymbolSet;
+use symbol_ontology_mcp::domain::SymbolSet;
 
 #[test]
 fn test_symbolset_creation() {

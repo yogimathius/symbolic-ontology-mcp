@@ -17,12 +17,12 @@
  * ## Usage Example
  *
  * ```rust,no_run
- * use dream_ontology_mcp::db::{pool, queries::SymbolQueries, models::Symbol};
+ * use symbol_ontology_mcp::db::{pool, queries::SymbolQueries, models::Symbol};
  * use sqlx::PgPool;
  *
  * # async fn example() -> Result<(), Box<dyn std::error::Error>> {
  * // Create a database connection pool
- * let db_pool = pool::create_pool("postgres://postgres:postgres@localhost/dream_ontology").await?;
+ * let db_pool = pool::create_pool("postgres://postgres:postgres@localhost/symbol_ontology").await?;
  *
  * // Use the database directly
  * let symbol = SymbolQueries::get_by_id(&db_pool, "water").await?;

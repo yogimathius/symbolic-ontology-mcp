@@ -1,4 +1,4 @@
-use dream_ontology_mcp::domain::Symbol;
+use symbol_ontology_mcp::domain::Symbol;
 
 #[test]
 fn test_symbol_creation() {
