@@ -12,20 +12,21 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY . .
 RUN cargo build --release --bin mcp_server
-RUN cargo build --release --bin mcp_websocket_server
-RUN cargo build --release --bin mcp_http_upgrade_server
-RUN cargo build --release --bin mcp_streamable_http_server
+RUN cargo build --release --bin mcp_client
+RUN cargo build --release --bin ontology_seeder
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Copy all server binaries
+# Copy server binaries
 COPY --from=builder /app/target/release/mcp_server /usr/local/bin
+COPY --from=builder /app/target/release/mcp_client /usr/local/bin
+COPY --from=builder /app/target/release/ontology_seeder /usr/local/bin
 
-# Expose all ports
-EXPOSE 3002 3003 3004 3005
+# Expose API port
+EXPOSE 3002
 
-# Default to running the original SSE server
+# Default to running the MCP SSE server
 ENTRYPOINT ["/usr/local/bin/mcp_server"]
