@@ -1,13 +1,13 @@
 [package]
-name = "dream-mcp-client"
+name = "symbol-mcp-client"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
-description = "MCP client for the Dream Ontology symbolic reasoning engine"
+description = "MCP client for the Symbol Ontology symbolic reasoning engine"
 repository = "https://github.com/yogimathius/symbolic-ontology-mcp"
 readme = "README.md"
-keywords = ["dream", "symbolism", "ontology", "mcp", "claude"]
+keywords = ["symbol", "symbolism", "ontology", "mcp", "claude"]
 categories = ["api-bindings", "command-line-utilities"]
 
 # This is the crate we DO publish
@@ -32,5 +32,5 @@ predicates = "3.1.0"
 
 # Create a binary
 [[bin]]
-name = "dream-mcp"
+name = "symbol-mcp"
 path = "src/main.rs" 
