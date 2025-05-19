@@ -1,6 +1,6 @@
 # Original package information
 [package]
-name = "dream-ontology-mcp"
+name = "symbol-ontology-mcp"
 version = "0.1.0"
 edition = "2024"
 
@@ -10,7 +10,7 @@ members = [
     ".",                   # Include the root crate
     "ontology-core",
     "ontology-api-server",
-    "dream-mcp-client"
+    "symbol-mcp-client"
 ]
 
 # Define workspace-wide properties
@@ -22,12 +22,12 @@ license = "MPL-2.0 OR Commercial"
 
 # Keep the existing binary and lib definitions, we'll migrate these later
 [lib]
-name = "dream_ontology_mcp"
+name = "symbol_ontology_mcp"
 path = "src/lib.rs"
 
 [[bin]]
-name = "dream-mcp"
-path = "src/bin/dream_mcp.rs"
+name = "symbol-mcp"
+path = "src/bin/symbol_mcp.rs"
 
 [[bin]]
 name = "ontology_seeder"
