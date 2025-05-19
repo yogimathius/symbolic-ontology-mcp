@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MPL-2.0 OR Commercial
+// Copyright (c) 2024 Symbol Ontology Contributors
+
 /*!
  * # Dream Ontology MCP Library
  *
