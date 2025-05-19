@@ -5,15 +5,15 @@ edition = "2024"
 
 # Add lib section to expose our code for integration tests
 [lib]
-name = "dream_ontology_mcp"
+name = "ontology_api"
 path = "src/lib.rs"
 
 [[bin]]
-name = "dream-mcp"
-path = "src/bin/dream_mcp.rs"
+name = "ontology-mcp"
+path = "src/bin/ontology_mcp.rs"
 
 [[bin]]
-name = "ontology_seeder"
+name = "ontology-seeder"
 path = "src/bin/ontology_seeder.rs"
 
 [[test]]
