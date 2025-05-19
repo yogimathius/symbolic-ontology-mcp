@@ -2,11 +2,11 @@
 // Copyright (c) 2024 Symbol Ontology Contributors
 
 use clap::Parser;
-use dream_ontology_mcp::config::Config;
-use dream_ontology_mcp::db::pool::create_pool;
-use dream_ontology_mcp::db::repository::PgRepositoryFactory;
-use dream_ontology_mcp::logging::setup_logging;
-use dream_ontology_mcp::mcp::service::SymbolService;
+use symbol_ontology_mcp::config::Config;
+use symbol_ontology_mcp::db::pool::create_pool;
+use symbol_ontology_mcp::db::repository::PgRepositoryFactory;
+use symbol_ontology_mcp::logging::setup_logging;
+use symbol_ontology_mcp::mcp::service::SymbolService;
 use rmcp::transport::sse_server::{SseServer, SseServerConfig};
 use std::collections::HashMap;
 use tokio_util::sync::CancellationToken;
@@ -42,7 +42,7 @@ async fn main() -> anyhow::Result<()> {
         }
     };
 
-    match dream_ontology_mcp::db::pool::init_database(&db_pool).await {
+    match symbol_ontology_mcp::db::pool::init_database(&db_pool).await {
         Ok(_) => info!("Database schema initialized"),
         Err(e) => {
             error!("Failed to initialize database schema: {:?}", e);

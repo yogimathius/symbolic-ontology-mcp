@@ -1,5 +1,5 @@
 use crate::common::fixtures;
-use dream_ontology_mcp::llm::prompts::{build_symbol_prompt, build_system_prompt};
+use symbol_ontology_mcp::llm::prompts::{build_symbol_prompt, build_system_prompt};
 
 #[test]
 fn test_build_system_prompt() {

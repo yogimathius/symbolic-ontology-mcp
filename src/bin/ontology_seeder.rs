@@ -12,9 +12,9 @@ use std::time::Instant;
 use tokio;
 use zip::ZipArchive;
 
-use dream_ontology_mcp::db::models::Symbol;
-use dream_ontology_mcp::db::pool::{DbError, create_pool, init_database};
-use dream_ontology_mcp::db::queries::SymbolQueries;
+use symbol_ontology_mcp::db::models::Symbol;
+use symbol_ontology_mcp::db::pool::{DbError, create_pool, init_database};
+use symbol_ontology_mcp::db::queries::SymbolQueries;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about = "Seed the Symbol Ontology database")]
@@ -50,7 +50,7 @@ struct SymbolData {
 }
 
 #[derive(Debug, Deserialize)]
-struct DreamDictionaryRow {
+struct SymbolDictionaryRow {
     #[serde(rename = "Symbol")]
     symbol: Option<String>,
     #[serde(rename = "Interpretation")]
@@ -60,7 +60,7 @@ struct DreamDictionaryRow {
 }
 
 #[derive(Debug, Deserialize)]
-struct DictionaryOfDreamsRow {
+struct DictionaryOfSymbolsRow {
     #[serde(rename = "Symbol")]
     symbol: Option<String>,
     #[serde(rename = "Meaning")]
@@ -70,7 +70,7 @@ struct DictionaryOfDreamsRow {
 }
 
 #[derive(Debug, Deserialize)]
-struct DreamsInterpretationsRow {
+struct SymbolsInterpretationsRow {
     #[serde(rename = "Dream Symbol")]
     symbol: Option<String>,
     #[serde(rename = "Interpretation")]
@@ -78,7 +78,7 @@ struct DreamsInterpretationsRow {
 }
 
 #[derive(Debug, Deserialize)]
-struct CleanedDreamInterpretationsRow {
+struct CleanedSymbolInterpretationsRow {
     #[serde(rename = "Word")]
     word: Option<String>,
     #[serde(rename = "Interpretation")]
@@ -86,7 +86,7 @@ struct CleanedDreamInterpretationsRow {
 }
 
 #[derive(Debug, Deserialize)]
-struct SampleDreamSymbolRow {
+struct SampleSymbolRow {
     #[serde(rename = "Symbol")]
     symbol: Option<String>,
     #[serde(rename = "Interpretation")]
@@ -186,7 +186,7 @@ fn read_csv_file<P: AsRef<Path>, T: for<'de> Deserialize<'de>>(
 fn row_to_symbol(symbol_name: &str, interpretation: &str, description: Option<&str>) -> Symbol {
     let id = symbol_name.to_lowercase().replace(" ", "_");
     let name = symbol_name.to_string();
-    let category = "dream".to_string();
+    let category = "symbol".to_string();
     let description = description
         .map(|d| d.to_string())
         .unwrap_or_else(|| "No description".to_string());
@@ -210,7 +210,7 @@ async fn import_csv_file<P: AsRef<Path>>(
     let mut error_count = 0;
 
     if path_str.contains("dream-dictionary") || path_str.contains("Dream Dictionary") {
-        let records: Vec<DreamDictionaryRow> = read_csv_file(&path)?;
+        let records: Vec<SymbolDictionaryRow> = read_csv_file(&path)?;
         println!("Read {} symbols from dream dictionary CSV", records.len());
 
         for record in records {
@@ -240,7 +240,7 @@ async fn import_csv_file<P: AsRef<Path>>(
         }
     } else if path_str.contains("dictionary-of-dreams") || path_str.contains("Dictionary of Dreams")
     {
-        let records: Vec<DictionaryOfDreamsRow> = read_csv_file(&path)?;
+        let records: Vec<DictionaryOfSymbolsRow> = read_csv_file(&path)?;
         println!(
             "Read {} symbols from Dictionary of Dreams CSV",
             records.len()
@@ -271,7 +271,7 @@ async fn import_csv_file<P: AsRef<Path>>(
     } else if path_str.contains("dreams_interpretations")
         || path_str.contains("Dreams Interpretations")
     {
-        let records: Vec<DreamsInterpretationsRow> = read_csv_file(&path)?;
+        let records: Vec<SymbolsInterpretationsRow> = read_csv_file(&path)?;
         println!(
             "Read {} symbols from Dreams Interpretations CSV",
             records.len()
@@ -303,7 +303,7 @@ async fn import_csv_file<P: AsRef<Path>>(
         }
     } else if path_str.contains("sample_dream_symbols") || path_str.contains("Sample Dream Symbols")
     {
-        let records: Vec<SampleDreamSymbolRow> = read_csv_file(&path)?;
+        let records: Vec<SampleSymbolRow> = read_csv_file(&path)?;
         println!(
             "Read {} symbols from Sample Dream Symbols CSV",
             records.len()
@@ -335,7 +335,7 @@ async fn import_csv_file<P: AsRef<Path>>(
             }
         }
     } else {
-        let records: Vec<CleanedDreamInterpretationsRow> = match read_csv_file(&path) {
+        let records: Vec<CleanedSymbolInterpretationsRow> = match read_csv_file(&path) {
             Ok(records) => records,
             Err(err) => {
                 eprintln!("Error reading CSV file {}: {}", path_str, err);

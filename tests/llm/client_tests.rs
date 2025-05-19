@@ -1,4 +1,4 @@
-use dream_ontology_mcp::llm::client::LlmClient;
+use symbol_ontology_mcp::llm::client::LlmClient;
 
 #[test]
 fn test_llm_client_creation() {
@@ -18,7 +18,7 @@ async fn test_llm_client_chat() {
 
 #[test]
 fn test_message_struct() {
-    use dream_ontology_mcp::llm::client::Message;
+    use symbol_ontology_mcp::llm::client::Message;
 
     let message = Message {
         role: "user".to_string(),
@@ -31,7 +31,7 @@ fn test_message_struct() {
 
 #[test]
 fn test_completion_request_serialization() {
-    use dream_ontology_mcp::llm::client::{CompletionRequest, Message};
+    use symbol_ontology_mcp::llm::client::{CompletionRequest, Message};
     use serde_json::Value;
 
     let request = CompletionRequest {

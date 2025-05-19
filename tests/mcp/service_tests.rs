@@ -1,4 +1,4 @@
-use dream_ontology_mcp::mcp::service::SymbolService;
+use symbol_ontology_mcp::mcp::service::SymbolService;
 use sqlx::postgres::PgPoolOptions;
 use std::time::Duration;
 

@@ -1,4 +1,4 @@
-use dream_ontology_mcp::db::repository::{
+use symbol_ontology_mcp::db::repository::{
     PgRepositoryFactory,
     interfaces::{SymbolRepository, SymbolSetRepository},
 };

@@ -1,9 +1,9 @@
 use async_trait::async_trait;
-use dream_ontology_mcp::db::repository::{
+use symbol_ontology_mcp::db::repository::{
     PgSymbolRepository,
     interfaces::{RepositoryError, RepositoryResult, SymbolRepository},
 };
-use dream_ontology_mcp::domain::Symbol;
+use symbol_ontology_mcp::domain::Symbol;
 use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
