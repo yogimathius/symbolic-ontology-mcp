@@ -1,0 +1,25 @@
+[package]
+name = "ontology-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+publish = false  # Prevents accidental publishing
+
+[dependencies]
+# Core dependencies
+anyhow = "1.0.98"
+async-trait = "0.1.88"
+serde = "1.0.219"
+serde_json = { version = "1.0.140", features = ["preserve_order"] }
+tokio = { version = "1.44.2", features = ["rt", "macros"] }
+thiserror = "2.0.12"
+tracing = "0.1.41"
+uuid = { version = "1.7.0", features = ["v4"] }
+
+# Database dependencies
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "json", "uuid", "time", "sqlite"] }
+pgvector = { version = "0.4", features = ["sqlx"] }
+
+[dev-dependencies]
+tokio-test = "0.4.4" 
