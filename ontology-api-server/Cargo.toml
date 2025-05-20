@@ -68,4 +68,4 @@ sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "json", "uuid
 [dev-dependencies]
 reqwest = { version = "0.11", features = ["json", "blocking", "multipart"] }
 async-trait = "0.1.88"
-tokio-test = "0.4.4" 
+tokio-test = "0.4.4"

@@ -1,15 +1,14 @@
 use axum::{
-    Json,
     extract::{Path, Query, State},
     http::StatusCode,
+    Json,
 };
 use serde::{Deserialize, Serialize};
 
 use super::error::{ApiError, ApiResult};
 use super::state::AppState;
-use ontology_core::db::models::Symbol;
-use ontology_core::domain::ontology::SymbolSet;
-use ontology_core::domain::symbols::Symbol as DomainSymbol;
+use ontology_core::domain::Symbol;
+use ontology_core::domain::SymbolSet;
 
 #[derive(Serialize)]
 pub struct SymbolsResponse {
@@ -53,7 +52,7 @@ pub async fn get_categories(State(state): State<AppState>) -> ApiResult<Json<Cat
 
 #[derive(Serialize)]
 pub struct DomainSymbolsResponse {
-    pub symbols: Vec<DomainSymbol>,
+    pub symbols: Vec<Symbol>,
     pub total_count: usize,
 }
 
@@ -93,7 +92,7 @@ pub async fn repo_list_symbols(
 pub async fn repo_get_symbol(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> ApiResult<Json<DomainSymbol>> {
+) -> ApiResult<Json<Symbol>> {
     if id.trim().is_empty() {
         return Err(ApiError::BadRequest(
             "Symbol ID cannot be empty".to_string(),
@@ -106,8 +105,8 @@ pub async fn repo_get_symbol(
 
 pub async fn repo_create_symbol(
     State(state): State<AppState>,
-    Json(symbol): Json<DomainSymbol>,
-) -> ApiResult<Json<DomainSymbol>> {
+    Json(symbol): Json<Symbol>,
+) -> ApiResult<Json<Symbol>> {
     if symbol.id.trim().is_empty() {
         return Err(ApiError::BadRequest(
             "Symbol ID cannot be empty".to_string(),
@@ -126,8 +125,8 @@ pub async fn repo_create_symbol(
 pub async fn repo_update_symbol(
     Path(id): Path<String>,
     State(state): State<AppState>,
-    Json(symbol): Json<DomainSymbol>,
-) -> ApiResult<Json<DomainSymbol>> {
+    Json(symbol): Json<Symbol>,
+) -> ApiResult<Json<Symbol>> {
     if id != symbol.id {
         return Err(ApiError::BadRequest(
             "Symbol ID in path does not match ID in body".to_string(),
@@ -314,7 +313,7 @@ pub async fn add_related_symbol(
     Path(id): Path<String>,
     State(state): State<AppState>,
     Json(request): Json<AddRelatedSymbolRequest>,
-) -> ApiResult<Json<DomainSymbol>> {
+) -> ApiResult<Json<Symbol>> {
     if id.trim().is_empty() {
         return Err(ApiError::BadRequest(
             "Symbol ID cannot be empty".to_string(),
