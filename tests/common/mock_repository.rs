@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use symbol_ontology_mcp::db::repository::interfaces::{
-    RepositoryError, RepositoryResult, SymbolRepository, SymbolSetRepository,
+    Repository, RepositoryError, RepositoryResult, SymbolRepository, SymbolSetRepository,
 };
 use symbol_ontology_mcp::domain::{Symbol, SymbolSet};
 
@@ -13,6 +13,8 @@ pub struct MockSymbolRepository {
     symbols: Arc<RwLock<HashMap<String, Symbol>>>,
     fail_next_operation: Arc<RwLock<Option<RepositoryError>>>,
 }
+
+impl Repository for MockSymbolRepository {}
 
 impl MockSymbolRepository {
     pub fn new() -> Self {
@@ -151,6 +153,8 @@ pub struct MockSymbolSetRepository {
     symbol_sets: Arc<RwLock<HashMap<String, SymbolSet>>>,
     fail_next_operation: Arc<RwLock<Option<RepositoryError>>>,
 }
+
+impl Repository for MockSymbolSetRepository {}
 
 impl MockSymbolSetRepository {
     pub fn new() -> Self {
