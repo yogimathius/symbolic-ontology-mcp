@@ -19,14 +19,15 @@ This document outlines the steps needed to complete the refactoring of the Symbo
    - [x] Move db/pool.rs to ontology-core
    - [x] Move db/schema.rs to ontology-core
    - [x] Move db/repository interfaces to ontology-core
-   - [ ] Move db/repository implementations to ontology-core
-   - [ ] Move db/queries.rs to ontology-core
-   - [ ] Update imports and dependencies
+   - [x] Move db/repository implementations to ontology-core
+   - [x] Move db/queries.rs to ontology-core
+   - [x] Update imports and dependencies
 
 3. **API Server Migration**
 
    - [x] Create basic Axum server in ontology-api-server
    - [x] Implement API endpoints for symbols
+   - [ ] Move API handlers and routes from src/api/ to ontology-api-server
    - [ ] Add authentication middleware
    - [ ] Add rate limiting
    - [ ] Add license validation
@@ -36,6 +37,7 @@ This document outlines the steps needed to complete the refactoring of the Symbo
    - [x] Create basic client structure
    - [x] Implement API connection
    - [x] Add proper MCP protocol implementation
+   - [ ] Move MCP service logic from src/mcp/ to symbol-mcp-client
    - [ ] Test against API server
 
 5. **Testing and Documentation**
@@ -48,7 +50,7 @@ This document outlines the steps needed to complete the refactoring of the Symbo
 
 1. **Final Code Review**
 
-   - [ ] Check for any remaining dream references
+   - [x] Check for any remaining dream references
    - [ ] Ensure consistent naming conventions
    - [ ] Verify all imports are correct
    - [ ] Run tests on all components
@@ -60,7 +62,7 @@ This document outlines the steps needed to complete the refactoring of the Symbo
    - [ ] Deploy API server to production
 
 3. **Documentation**
-   - [ ] Ensure README is up to date
+   - [x] Ensure README is up to date
    - [ ] Create comprehensive usage documentation
    - [ ] Add API reference
    - [ ] Document installation process
@@ -107,5 +109,7 @@ Today we made significant progress on refactoring the Symbol Ontology project:
 3. **Next Steps**
    - Continue eliminating dream references (from tests, docs, and remaining source files)
    - Move DB repository implementations to ontology-core
+   - Move API handlers and routes from src/api/ to ontology-api-server
+   - Move MCP service logic from src/mcp/ to symbol-mcp-client
    - Implement authentication for the API server
    - Create comprehensive tests for the new structure

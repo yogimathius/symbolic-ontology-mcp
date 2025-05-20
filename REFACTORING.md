@@ -30,34 +30,36 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 
 ### Phase 2: Core Library Implementation
 
-- [ ] Move domain models to `ontology-core/src/domain/`
-- [ ] Move database logic to `ontology-core/src/db/`
-- [ ] Move shared utilities to `ontology-core/src/utils/`
-- [ ] Create public API for the core library
+- [x] Move domain models to `ontology-core/src/domain/`
+- [x] Move database logic to `ontology-core/src/db/`
+- [x] Move shared utilities to `ontology-core/src/utils/`
+- [x] Create public API for the core library
 - [ ] Add tests to ensure functionality is preserved
 
 ### Phase 3: API Server Implementation
 
-- [ ] Create API server in `ontology-api-server`
-- [ ] Add dependency on `ontology-core`
+- [x] Create basic API server in `ontology-api-server`
+- [x] Add dependency on `ontology-core`
+- [ ] Move API routes and handlers from `src/api/` to `ontology-api-server`
 - [ ] Implement authentication mechanism
 - [ ] Add license validation endpoint
 - [ ] Implement tiered rate limiting
 
 ### Phase 4: MCP Client Implementation
 
-- [ ] Create minimal MCP client binary in `symbol-mcp-client` (renamed)
-- [ ] Implement connection to API service
+- [x] Create minimal MCP client binary in `symbol-mcp-client` (renamed)
+- [x] Implement connection to API service
+- [ ] Move MCP methods and service logic from `src/mcp/` to `symbol-mcp-client`
 - [ ] Add license verification
 - [ ] Create MCP service interface
 - [ ] Document client usage
 
 ### Phase 5: Testing & Documentation
 
-- [ ] Test client against live API
+- [ ] Migrate tests to new structure
 - [ ] Document installation process
 - [ ] Create example configurations
-- [ ] Update README with new structure information
+- [x] Update README with new structure information
 
 ### Phase 6: Deployment & Release
 
@@ -67,15 +69,15 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 
 ### Phase 7: Terminology Refactoring
 
-- [ ] Rename `symbol-mcp-client` directory to `symbol-mcp-client`
-- [ ] Update all imports and references in code
-- [ ] Rename all dream-specific struct names and variables
-- [ ] Change all default category values from "dream" to "symbol" or "general"
-- [ ] Update documentation to remove dream-specific terminology
-- [ ] Update function and method names that reference dreams
-- [ ] Revise test fixtures to use general symbol examples
-- [ ] Rename imports and crate references
-- [ ] Update CLI help text and environment variable names
+- [x] Rename `dream-mcp-client` directory to `symbol-mcp-client`
+- [x] Update all imports and references in code
+- [x] Rename all dream-specific struct names and variables
+- [x] Change all default category values from "dream" to "symbol" or "general"
+- [x] Update documentation to remove dream-specific terminology
+- [x] Update function and method names that reference dreams
+- [x] Revise test fixtures to use general symbol examples
+- [x] Rename imports and crate references
+- [x] Update CLI help text and environment variable names
 
 ## Migration Strategy
 
@@ -86,10 +88,20 @@ This document outlines the plan to refactor the Symbol Ontology project into a m
 5. Remove deprecated code after successful migration
 6. Complete terminology refactoring as a final step
 
-## Next Steps
+## Current Status and Next Steps
 
-1. Begin moving domain models to the core library
-2. Extract database logic from main crate
-3. Implement basic API server with authentication
-4. Develop MCP client with API integration
-5. Start terminology refactoring in parallel
+1. ✅ Workspace structure has been set up
+2. ✅ Domain models have been moved to `ontology-core`
+3. ✅ Database models and interfaces have been moved to `ontology-core`
+4. ✅ Basic API server framework has been set up
+5. ✅ Symbol-mcp-client has been created and renamed from dream-mcp-client
+6. ✅ All dream-specific terminology has been updated to symbol-centric terms
+
+### Remaining Tasks (In Order)
+
+1. Move API logic from `src/api/` to `ontology-api-server/src/`
+2. Move MCP logic from `src/mcp/` to appropriate locations (`symbol-mcp-client` or `ontology-core`)
+3. Review and migrate binaries in `src/bin/`
+4. Clean up remaining root files (`src/main.rs`, `src/lib.rs`, etc.)
+5. Update tests to reference new crate structure
+6. Finalize documentation and examples
