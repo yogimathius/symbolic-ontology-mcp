@@ -5,9 +5,11 @@ use std::net::SocketAddr;
 
 use anyhow::Result;
 use clap::Parser;
+use reqwest::Client;
 use rmcp::server::MCPServer;
+use std::sync::Arc;
 use tokio::net::TcpListener;
-use tracing::{error, info};
+use tracing::{error, info, Level};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod mcp;
@@ -15,20 +17,20 @@ mod mcp;
 #[derive(Parser, Debug)]
 #[clap(name = "symbol-mcp", about = "Symbol Ontology MCP Client", version)]
 struct Args {
-    /// Port to listen on
-    #[clap(short, long, env = "PORT", default_value = "3000")]
+    /// Port to listen on for local server
+    #[arg(short, long, env("PORT"), default_value = "3000")]
     port: u16,
 
-    /// Enable verbose logging
-    #[clap(short, long, env = "VERBOSE", action = clap::ArgAction::Count)]
+    /// Verbosity level (can be used multiple times)
+    #[arg(short, long, env("VERBOSE"), action = clap::ArgAction::Count)]
     verbose: u8,
 
-    /// API key for authentication
-    #[clap(long, env = "SYMBOL_MCP_API_KEY")]
+    /// API key for accessing the Symbol Ontology API
+    #[arg(long, env("SYMBOL_MCP_API_KEY"))]
     api_key: Option<String>,
 
-    /// API endpoint for non-local operation
-    #[clap(long, env = "SYMBOL_MCP_API_ENDPOINT")]
+    /// API endpoint for the Symbol Ontology API
+    #[arg(long, env("SYMBOL_MCP_API_ENDPOINT"))]
     api_endpoint: Option<String>,
 
     #[cfg(feature = "local")]
