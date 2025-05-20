@@ -6,6 +6,8 @@ use rmcp::ServerHandler;
 use std::sync::Arc;
 use tracing::{debug, error, info};
 
+#[cfg(feature = "local")]
+use crate::mcp::test_utils::{InMemorySymbolRepository, InMemorySymbolSetRepository};
 use ontology_core::db::repository::{SymbolRepository, SymbolSetRepository};
 
 use crate::mcp::methods::{
@@ -38,6 +40,17 @@ fn pretty_print_result(content: &Content) -> String {
 pub struct SymbolService {
     pub symbol_repository: Arc<dyn SymbolRepository>,
     pub symbol_set_repository: Arc<dyn SymbolSetRepository>,
+}
+
+impl SymbolService {
+    /// Creates a new SymbolService with in-memory repositories for testing
+    #[cfg(feature = "local")]
+    pub fn new() -> Self {
+        Self {
+            symbol_repository: Arc::new(InMemorySymbolRepository::new()),
+            symbol_set_repository: Arc::new(InMemorySymbolSetRepository::new()),
+        }
+    }
 }
 
 #[tool(tool_box)]

@@ -237,6 +237,9 @@ mod tests {
     use serde_json::json;
 
     #[cfg(feature = "local")]
+    use crate::mcp::test_utils::InMemorySymbolRepository;
+
+    #[cfg(feature = "local")]
     use std::collections::HashMap;
 
     #[cfg(feature = "local")]
@@ -248,7 +251,7 @@ mod tests {
     #[cfg(feature = "local")]
     #[test]
     fn test_method_name() {
-        let handler = get_symbols(Arc::new(MockSymbolRepository::new()));
+        let handler = get_symbols(Arc::new(InMemorySymbolRepository::new()));
         assert_eq!(handler.method_name(), "get_symbols");
     }
 

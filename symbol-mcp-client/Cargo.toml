@@ -67,13 +67,16 @@ tokio-util = { version = "0.7.15", features = ["full"] }
 assert_cmd = "2.0.13"
 predicates = "3.1.0"
 tokio-test = "0.4.4"
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres"] }
 
 # Features
 [features]
 # Feature to expose the core library types
 core = ["ontology-core"]
 # Default features
-default = ["core"]
+default = ["ontology-core"]
+ontology-core = ["dep:ontology-core"]
+local = []
 
 # Create a binary
 [[bin]]
