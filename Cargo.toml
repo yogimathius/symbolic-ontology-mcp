@@ -3,6 +3,10 @@
 name = "symbol-ontology-mcp"
 version = "0.1.0"
 edition = "2021"
+authors = ["Mathius Johnson <info@yogimathius.dev>"]
+license = "MPL-2.0 OR Commercial"
+description = "Symbol Ontology with Model Context Protocol (MCP) integration"
+repository = "https://github.com/nexus-flow/symbol-ontology"
 
 # Define workspace - new configuration
 [workspace]
@@ -20,18 +24,8 @@ edition = "2021"
 authors = ["Mathius Johnson <dev@yogimathius.dev>"]
 license = "MPL-2.0 OR Commercial"
 
-# Keep the existing binary and lib definitions, we'll migrate these later
-[lib]
-name = "symbol_ontology_mcp"
-path = "src/lib.rs"
-
-[[bin]]
-name = "symbol-mcp"
-path = "src/bin/symbol_mcp.rs"
-
-[[bin]]
-name = "ontology_seeder"
-path = "src/bin/ontology_seeder.rs"
+# The root crate is now just a workspace, no lib or bin targets
+# We've moved all functionality to subprojects
 
 [[test]]
 name = "integration"
@@ -107,3 +101,14 @@ async-trait = "0.1.88"
 tokio-test = "0.4.4"
 tower = "0.5.2"
 uuid = { version = "1.7.0", features = ["v4"] }
+
+# Workspace command aliases
+[workspace.metadata.commands]
+# Start the MCP client standalone
+mcp-client = { command = "cargo run --bin symbol-mcp --package symbol-mcp-client" }
+# Start the API server
+api-server = { command = "cargo run --bin ontology-api-server --package ontology-api-server" }
+# Run the full stack (requires external tooling like cargo-workspaces or cargo-run-script)
+full-stack = { command = "echo 'Please use separate terminal windows to run the API server and MCP client'" }
+# Test all components
+test-all = { command = "cargo test --workspace" }
