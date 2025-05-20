@@ -1,7 +1,9 @@
 use sqlx::PgPool;
 use std::sync::Arc;
 
-use ontology_core::db::repository::{PgRepositoryFactory, SymbolRepository, SymbolSetRepository};
+use ontology_core::db::repository::{
+    PgRepositoryFactory, RepositoryFactory, SymbolRepository, SymbolSetRepository,
+};
 
 #[derive(Clone)]
 pub struct AppState {

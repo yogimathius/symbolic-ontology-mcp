@@ -4,14 +4,15 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::{Router, routing::get};
+use axum::{routing::get, Router};
 use clap::Parser;
-use tracing::{Level, info};
+use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
 use ontology_core::db::pool::{create_pool, init_database};
 use ontology_core::db::repository::PgRepositoryFactory;
 
+mod api;
 mod routes;
 
 #[derive(Parser, Debug)]
@@ -24,7 +25,7 @@ struct Args {
     /// Database URL
     #[arg(
         long,
-        env = "DATABASE_URL",
+        env("DATABASE_URL"),
         default_value = "postgres://postgres:postgres@localhost:5432/symbol_ontology"
     )]
     database_url: String,
@@ -59,21 +60,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = create_pool(&args.database_url).await?;
     init_database(&pool).await?;
 
-    // Create repository factory
-    let repo_factory = Arc::new(PgRepositoryFactory::new(pool));
+    // Create router with API routes (traditional REST API)
+    let api_router = api::routes::router(pool.clone());
 
-    // Create router with API routes
+    // Create main router with both API routes
     let app = Router::new()
         .route("/", get(|| async { "Symbol Ontology API Server" }))
         .route("/health", get(|| async { "OK" }))
-        .nest("/api/v1", routes::create_api_router(repo_factory.clone()));
+        .nest(
+            "/api/v1",
+            routes::create_api_router(Arc::new(PgRepositoryFactory::new(pool.clone()))),
+        )
+        .nest("/api/v2", api_router);
 
     // Run the server
     let addr = SocketAddr::from(([127, 0, 0, 1], args.port));
     info!("Listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await?;
+
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+    axum::serve(listener, app).await?;
 
     Ok(())
 }
