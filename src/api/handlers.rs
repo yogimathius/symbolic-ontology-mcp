@@ -1,13 +1,13 @@
 use axum::{
-    Json,
     extract::{Path, Query, State},
     http::StatusCode,
+    Json,
 };
 use serde::{Deserialize, Serialize};
 
 use super::error::{ApiError, ApiResult};
 use super::state::AppState;
-use crate::db::models::Symbol;
+use crate::domain::Symbol;
 use crate::domain::{Symbol as DomainSymbol, SymbolSet};
 
 #[derive(Serialize)]

@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use std::sync::Arc;
 
-use crate::db::repository::{PgRepositoryFactory, SymbolRepository, SymbolSetRepository};
+use crate::db::{PgRepositoryFactory, RepositoryFactory, SymbolRepository, SymbolSetRepository};
 
 #[derive(Clone)]
 pub struct AppState {
