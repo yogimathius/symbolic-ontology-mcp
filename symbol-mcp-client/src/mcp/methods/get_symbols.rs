@@ -4,16 +4,15 @@ use std::error::Error as StdError;
 use std::fmt;
 use std::sync::Arc;
 
-#[cfg(feature = "local")]
 use ontology_core::db::repository::{RepositoryError, SymbolRepository};
-#[cfg(feature = "local")]
-use ontology_core::domain::symbols::Symbol;
+use ontology_core::domain::Symbol;
 
 use crate::mcp::schema::{GetSymbolsParams, GetSymbolsResponse, SymbolDTO};
 
+use super::utils::repository_error_to_rmcp_error;
+
 /// Handler trait definition
 #[async_trait]
-#[allow(dead_code)]
 pub trait Handler: Send + Sync {
     fn method_name(&self) -> &str;
 
@@ -21,7 +20,6 @@ pub trait Handler: Send + Sync {
 }
 
 /// MethodCall structure
-#[allow(dead_code)]
 pub struct MethodCall {
     pub id: String,
     pub method: String,
@@ -49,7 +47,6 @@ impl MethodCall {
 /// - -32000 to -32099: Reserved for implementation-defined server errors
 /// - Client-defined codes may be used for custom errors (not used here)
 #[derive(Debug, Clone, Copy)]
-#[allow(dead_code)]
 pub enum RmcpErrorCode {
     /// -32600: Invalid request - The JSON sent is not a valid Request object
     /// as defined in the JSON-RPC 2.0 specification
@@ -79,7 +76,6 @@ pub enum RmcpErrorCode {
 
 impl RmcpErrorCode {
     /// Get the numeric code for this error
-    #[allow(dead_code)]
     pub fn code(&self) -> i32 {
         match self {
             Self::InvalidRequest => -32600,
@@ -93,7 +89,6 @@ impl RmcpErrorCode {
     }
 
     /// Get a string representation of this error code
-    #[allow(dead_code)]
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::InvalidRequest => "Invalid request",
@@ -110,11 +105,8 @@ impl RmcpErrorCode {
 /// Enhanced MCP error type
 #[derive(Debug)]
 pub enum RmcpError {
-    /// Parse error when deserializing request
     ParseError(String),
-    /// Error from the repository layer
     RepositoryError(String),
-    /// Other errors
     #[allow(dead_code)]
     Other(String),
 }
@@ -131,15 +123,8 @@ impl fmt::Display for RmcpError {
 
 impl StdError for RmcpError {}
 
-impl From<serde_json::Error> for RmcpError {
-    fn from(err: serde_json::Error) -> Self {
-        RmcpError::ParseError(err.to_string())
-    }
-}
-
 impl RmcpError {
     /// Get the error code for this error
-    #[allow(dead_code)]
     pub fn error_code(&self) -> RmcpErrorCode {
         match self {
             Self::ParseError(_) => RmcpErrorCode::InvalidParams,
@@ -152,7 +137,6 @@ impl RmcpError {
     ///
     /// This creates a standard JSON-RPC 2.0 error response following the specification:
     /// https://www.jsonrpc.org/specification#error_object
-    #[allow(dead_code)]
     pub fn to_jsonrpc_error(&self, id: &str) -> serde_json::Value {
         let code = self.error_code();
         serde_json::json!({
@@ -167,57 +151,39 @@ impl RmcpError {
     }
 }
 
-#[cfg(feature = "local")]
+impl From<serde_json::Error> for RmcpError {
+    fn from(err: serde_json::Error) -> Self {
+        RmcpError::ParseError(err.to_string())
+    }
+}
+
 impl From<RepositoryError> for RmcpError {
     fn from(err: RepositoryError) -> Self {
-        match err {
-            RepositoryError::NotFound(msg) => {
-                RmcpError::RepositoryError(format!("Not found: {}", msg))
-            }
-            RepositoryError::Conflict(msg) => {
-                RmcpError::RepositoryError(format!("Conflict: {}", msg))
-            }
-            RepositoryError::Internal(msg) => {
-                RmcpError::RepositoryError(format!("Internal: {}", msg))
-            }
-            RepositoryError::Validation(msg) => {
-                RmcpError::RepositoryError(format!("Validation: {}", msg))
-            }
-            RepositoryError::NotImplemented(_) => {
-                RmcpError::RepositoryError("Not implemented".to_string())
-            }
-        }
+        repository_error_to_rmcp_error(err)
     }
 }
 
 /// MCP handler for get_symbols method
-#[cfg(feature = "local")]
 pub struct GetSymbolsHandler {
-    // Repository for fetching symbols
     symbol_repository: Arc<dyn SymbolRepository>,
 }
 
-#[cfg(feature = "local")]
 impl GetSymbolsHandler {
-    /// Create a new handler with the provided repository
-    #[allow(dead_code)]
     pub fn new(symbol_repository: Arc<dyn SymbolRepository>) -> Self {
         GetSymbolsHandler { symbol_repository }
     }
 
-    /// Convert a domain Symbol to a DTO for the API
     fn to_dto(symbol: &Symbol) -> SymbolDTO {
         SymbolDTO {
             id: symbol.id.clone(),
             name: symbol.name.clone(),
             category: symbol.category.clone(),
-            description: symbol.description.clone(),
+            description: symbol.description.to_string().clone(),
             related_symbols: symbol.related_symbols.clone(),
         }
     }
 }
 
-#[cfg(feature = "local")]
 #[async_trait]
 impl Handler for GetSymbolsHandler {
     fn method_name(&self) -> &str {
@@ -228,31 +194,41 @@ impl Handler for GetSymbolsHandler {
         // Parse parameters
         let params: GetSymbolsParams = call.parse_params()?;
 
-        // Get symbols from repository with limit
-        let symbols = self.symbol_repository.get_all(params.limit).await?;
+        // Validate category if provided
+        if let Some(cat) = &params.category {
+            if cat.trim().is_empty() {
+                return Err(RmcpError::ParseError(
+                    "Category cannot be empty".to_string(),
+                ));
+            }
+        }
 
-        // Convert to DTOs
-        let symbol_dtos: Vec<SymbolDTO> = symbols.iter().map(Self::to_dto).collect();
+        // Fetch symbols with optional category filter
+        let symbols = self
+            .symbol_repository
+            .list_symbols(params.category.as_deref())
+            .await
+            .map_err(repository_error_to_rmcp_error)?;
 
-        // Create response
-        let response = GetSymbolsResponse {
+        // Apply limit and convert to DTOs
+        let symbol_dtos = symbols
+            .iter()
+            .take(params.limit)
+            .map(Self::to_dto)
+            .collect::<Vec<_>>();
+
+        let total_count = symbols.len();
+
+        // Create and return response
+        Ok(serde_json::to_value(GetSymbolsResponse {
             symbols: symbol_dtos,
-            total_count: symbols.len(),
-        };
-
-        // Return serialized response
-        Ok(serde_json::to_value(response)?)
+            total_count,
+        })?)
     }
 }
 
-#[cfg(feature = "local")]
 pub fn get_symbols(symbol_repository: Arc<dyn SymbolRepository>) -> GetSymbolsHandler {
     GetSymbolsHandler::new(symbol_repository)
-}
-
-#[cfg(not(feature = "local"))]
-pub fn get_symbols() {
-    // Stub for when local feature is not enabled
 }
 
 #[cfg(test)]
