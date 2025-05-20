@@ -1,13 +1,12 @@
 use axum::{
-    Json,
     http::StatusCode,
     response::{IntoResponse, Response},
+    Json,
 };
 use serde_json::json;
 use std::fmt;
 
-use crate::db::pool::DbError;
-use crate::db::repository::RepositoryError;
+use crate::db::{DbError, RepositoryError};
 
 #[derive(Debug)]
 pub enum ApiError {
