@@ -2,8 +2,7 @@ use tokio::net::TcpListener;
 use tracing::{debug, info};
 
 use crate::config::Config;
-use crate::db::pool::{create_pool, init_database};
-use crate::db::queries::SymbolQueries;
+use crate::db::{create_pool, init_database};
 use crate::logging::{setup_logging, trace_layer};
 
 mod api;
@@ -35,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!(
         "Starting Dream Ontology Symbolic MCP Server v{}",
-        utils::version()
+        env!("CARGO_PKG_VERSION")
     );
 
     debug!("Loaded configuration: {:?}", config);
@@ -50,13 +49,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Initializing database schema");
     init_database(&db_pool).await?;
-
-    if config.seed_test_data {
-        info!("Seeding test data");
-        SymbolQueries::seed_test_data(&db_pool).await.map_err(|e| {
-            Box::<dyn std::error::Error>::from(format!("Error seeding test data: {}", e))
-        })?;
-    }
 
     let app = api::routes::router(db_pool.clone()).layer(trace_layer());
 
