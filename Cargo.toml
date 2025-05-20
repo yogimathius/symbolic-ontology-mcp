@@ -11,10 +11,9 @@ repository = "https://github.com/nexus-flow/symbol-ontology"
 # Define workspace - new configuration
 [workspace]
 members = [
-    ".",                   # Include the root crate
     "ontology-core",
     "ontology-api-server",
-    "symbol-mcp-client"
+    "symbol-mcp-client",
 ]
 
 # Define workspace-wide properties
@@ -34,8 +33,8 @@ path = "tests/lib.rs"
 # Keep the existing dependencies for now
 [dependencies]
 # Internal crates
-ontology-core = { path = "./ontology-core" }
-ontology-api-server = { path = "./ontology-api-server" }
+ontology-core = { path = "ontology-core" }
+symbol-mcp-client = { path = "symbol-mcp-client" }
 
 # Async runtime
 tokio = { version = "1.44.2", features = ["full", "macros"] }

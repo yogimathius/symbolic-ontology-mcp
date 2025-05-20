@@ -1,6 +1,2 @@
-pub mod api;
-pub mod common;
-pub mod db;
-pub mod domain;
-pub mod llm;
-pub mod mcp;
+// Empty integration test file
+// All tests have been moved to respective crates

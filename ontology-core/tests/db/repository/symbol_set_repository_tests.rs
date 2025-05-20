@@ -1,13 +1,13 @@
 use async_trait::async_trait;
+use ontology_core::db::repository::{
+    interfaces::{Repository, RepositoryError, RepositoryResult, SymbolSetRepository},
+    PgSymbolSetRepository,
+};
+use ontology_core::domain::{Symbol, SymbolSet};
 use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
-use symbol_ontology_mcp::db::repository::{
-    interfaces::{Repository, RepositoryError, RepositoryResult, SymbolSetRepository},
-    PgSymbolSetRepository,
-};
-use symbol_ontology_mcp::domain::{Symbol, SymbolSet};
 
 // In-memory implementation of SymbolSetRepository for testing
 struct TestSymbolSetRepository {

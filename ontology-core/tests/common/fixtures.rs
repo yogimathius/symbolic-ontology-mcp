@@ -1,4 +1,5 @@
-use symbol_ontology_mcp::domain::{Symbol, SymbolSet};
+use ontology_core::domain::{Symbol, SymbolSet};
+use std::collections::HashMap;
 
 pub fn create_test_symbol(id: &str, name: &str, category: &str) -> Symbol {
     Symbol::new(
@@ -15,7 +16,7 @@ pub fn create_detailed_symbol(
     category: &str,
     description: &str,
     interpretations: Vec<(&str, &str)>,
-    related_symbols: Vec<&str>,
+    related: Vec<&str>,
 ) -> Symbol {
     let mut symbol = Symbol::new(
         id.to_string(),
@@ -24,12 +25,12 @@ pub fn create_detailed_symbol(
         description.to_string(),
     );
 
-    for (context, interpretation) in interpretations {
-        symbol.add_interpretation(context.to_string(), interpretation.to_string());
+    for (context, meaning) in interpretations {
+        symbol.add_interpretation(context.to_string(), meaning.to_string());
     }
 
-    for related in related_symbols {
-        symbol.add_related_symbol(related.to_string());
+    for related_symbol in related {
+        symbol.add_related_symbol(related_symbol.to_string());
     }
 
     symbol
@@ -53,6 +54,47 @@ pub fn create_test_symbol_set(
     symbol_set.add_symbol(create_test_symbol("mountain", "Mountain", "dream"));
 
     symbol_set
+}
+
+pub fn create_test_symbols() -> HashMap<String, Symbol> {
+    let mut symbols = HashMap::new();
+
+    let test_symbols = vec![
+        create_test_symbol("water", "Water", "dream"),
+        create_test_symbol("fire", "Fire", "dream"),
+        create_test_symbol("mountain", "Mountain", "dream"),
+    ];
+
+    for symbol in test_symbols {
+        symbols.insert(symbol.id.clone(), symbol);
+    }
+
+    symbols
+}
+
+pub fn create_test_symbol_sets() -> HashMap<String, SymbolSet> {
+    let mut sets = HashMap::new();
+
+    let test_sets = vec![
+        create_test_symbol_set(
+            "dream-symbols",
+            "Dream Symbols",
+            "dream",
+            "Common symbols in dreams",
+        ),
+        create_test_symbol_set(
+            "myth-symbols",
+            "Mythological Symbols",
+            "mythological",
+            "Symbols from mythology",
+        ),
+    ];
+
+    for set in test_sets {
+        sets.insert(set.id.clone(), set);
+    }
+
+    sets
 }
 
 pub fn create_dream_symbols() -> SymbolSet {

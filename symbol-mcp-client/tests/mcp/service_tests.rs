@@ -1,19 +1,20 @@
-use std::sync::Arc;
+use sqlx::postgres::PgPoolOptions;
+use std::time::Duration;
+use symbol_ontology_mcp::mcp::service::SymbolService;
 
 #[tokio::test]
-async fn test_mcp_service_creation() {
-    // This is a placeholder test that will be expanded later
-    // For actual MCP service tests, we'd create a service with mocked repositories
+async fn test_symbol_service_new_with_db() {
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(1))
+        .connect("postgres://postgres:postgres@localhost/test_db")
+        .await;
 
-    // When implementing:
-    // let symbol_repo = Arc::new(MockSymbolRepository::new());
-    // let symbol_set_repo = Arc::new(MockSymbolSetRepository::new());
-    // let service = SymbolService {
-    //     symbol_repository: symbol_repo,
-    //     symbol_set_repository: symbol_set_repo,
-    // };
-    // assert service properties
+    if let Ok(pool) = pool {
+        let _service = SymbolService::new_with_db(pool);
 
-    // For now, just a trivial assertion to make tests compile
-    assert!(true);
+        assert!(true, "SymbolService was successfully created");
+    } else {
+        println!("Skipping test_symbol_service_new_with_db as database connection failed");
+    }
 }
