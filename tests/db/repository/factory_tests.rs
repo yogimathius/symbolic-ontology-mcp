@@ -1,10 +1,11 @@
-use symbol_ontology_mcp::db::repository::{
-    PgRepositoryFactory,
+use ontology_core::db::repository::{
     interfaces::{SymbolRepository, SymbolSetRepository},
+    PgRepositoryFactory,
 };
 use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::time::Duration;
+use symbol_ontology_mcp::db::RepositoryFactory;
 
 #[tokio::test]
 async fn test_repository_factory_new() {

@@ -1,18 +1,20 @@
 use async_trait::async_trait;
-use symbol_ontology_mcp::db::repository::{
-    PgSymbolRepository,
-    interfaces::{RepositoryError, RepositoryResult, SymbolRepository},
-};
-use symbol_ontology_mcp::domain::Symbol;
 use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
+use symbol_ontology_mcp::db::repository::{
+    interfaces::{Repository, RepositoryError, RepositoryResult, SymbolRepository},
+    PgSymbolRepository,
+};
+use symbol_ontology_mcp::domain::Symbol;
 
 struct TestSymbolRepository {
     symbols: Arc<RwLock<HashMap<String, Symbol>>>,
     should_fail: Arc<RwLock<bool>>,
 }
+
+impl Repository for TestSymbolRepository {}
 
 impl TestSymbolRepository {
     fn new() -> Self {
