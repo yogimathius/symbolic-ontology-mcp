@@ -1,12 +1,12 @@
 use log::info;
-use rmcp::{ServerHandler, model::*, tool};
+use rmcp::{model::*, tool, ServerHandler};
 use sqlx::PgPool;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crate::db::pool::DbError;
-use crate::db::repository::{
-    PgRepositoryFactory, RepositoryError, SymbolRepository, SymbolSetRepository,
+use crate::db::DbError;
+use crate::db::{
+    PgRepositoryFactory, RepositoryError, RepositoryFactory, SymbolRepository, SymbolSetRepository,
 };
 use crate::mcp::schema::{CategorySymbolsParams, GetSymbolsParams, SearchSymbolsParams};
 
@@ -62,7 +62,10 @@ impl SymbolService {
         info!("Tool call: get_symbols");
         info!("Parameters: {}", pretty_print_params(&params));
 
-        let symbols = self.symbol_repository.list_symbols(None).await?;
+        let symbols = match self.symbol_repository.list_symbols(None).await {
+            Ok(symbols) => symbols,
+            Err(err) => return Err(repository_error_to_rmcp_error(err)),
+        };
 
         let total_count = symbols.len();
         let symbols = symbols
@@ -77,10 +80,13 @@ impl SymbolService {
             })
             .collect::<Vec<_>>();
 
-        let content = Content::json(serde_json::json!({
+        let content = match Content::json(serde_json::json!({
             "symbols": symbols,
             "total_count": total_count
-        }))?;
+        })) {
+            Ok(content) => content,
+            Err(err) => return Err(err),
+        };
 
         info!(
             "Returning {} symbols (from total of {})",
@@ -102,7 +108,10 @@ impl SymbolService {
         info!("Tool call: search_symbols");
         info!("Parameters: {}", pretty_print_params(&params));
 
-        let symbols = self.symbol_repository.search_symbols(&params.query).await?;
+        let symbols = match self.symbol_repository.search_symbols(&params.query).await {
+            Ok(symbols) => symbols,
+            Err(err) => return Err(repository_error_to_rmcp_error(err)),
+        };
 
         let total_count = symbols.len();
         let symbols = symbols
@@ -117,10 +126,13 @@ impl SymbolService {
             })
             .collect::<Vec<_>>();
 
-        let content = Content::json(serde_json::json!({
+        let content = match Content::json(serde_json::json!({
             "symbols": symbols,
             "total_count": total_count
-        }))?;
+        })) {
+            Ok(content) => content,
+            Err(err) => return Err(err),
+        };
 
         info!(
             "Found {} symbols matching query '{}' (from total of {})",
@@ -143,10 +155,14 @@ impl SymbolService {
         info!("Tool call: filter_by_category");
         info!("Parameters: {}", pretty_print_params(&params));
 
-        let symbols = self
+        let symbols = match self
             .symbol_repository
             .list_symbols(Some(&params.category))
-            .await?;
+            .await
+        {
+            Ok(symbols) => symbols,
+            Err(err) => return Err(repository_error_to_rmcp_error(err)),
+        };
 
         let total_count = symbols.len();
         let symbols = symbols
@@ -161,10 +177,13 @@ impl SymbolService {
             })
             .collect::<Vec<_>>();
 
-        let content = Content::json(serde_json::json!({
+        let content = match Content::json(serde_json::json!({
             "symbols": symbols,
             "total_count": total_count
-        }))?;
+        })) {
+            Ok(content) => content,
+            Err(err) => return Err(err),
+        };
 
         info!(
             "Found {} symbols in category '{}' (from total of {})",
@@ -183,7 +202,10 @@ impl SymbolService {
     async fn get_categories(&self) -> Result<CallToolResult, rmcp::Error> {
         info!("Tool call: get_categories");
 
-        let symbols = self.symbol_repository.list_symbols(None).await?;
+        let symbols = match self.symbol_repository.list_symbols(None).await {
+            Ok(symbols) => symbols,
+            Err(err) => return Err(repository_error_to_rmcp_error(err)),
+        };
 
         let mut categories = std::collections::HashSet::new();
         for symbol in &symbols {
@@ -193,10 +215,13 @@ impl SymbolService {
         let mut categories: Vec<String> = categories.into_iter().collect();
         categories.sort();
 
-        let content = Content::json(serde_json::json!({
+        let content = match Content::json(serde_json::json!({
             "categories": categories,
             "total_count": categories.len()
-        }))?;
+        })) {
+            Ok(content) => content,
+            Err(err) => return Err(err),
+        };
 
         info!("Found {} categories", categories.len());
         info!("Result preview:\n{}", pretty_print_result(&content));
@@ -213,7 +238,10 @@ impl SymbolService {
         info!("Tool call: get_symbol_sets");
         info!("Parameters: {}", pretty_print_params(&params));
 
-        let symbol_sets = self.symbol_set_repository.list_symbol_sets(None).await?;
+        let symbol_sets = match self.symbol_set_repository.list_symbol_sets(None).await {
+            Ok(symbol_sets) => symbol_sets,
+            Err(err) => return Err(repository_error_to_rmcp_error(err)),
+        };
 
         let total_count = symbol_sets.len();
         let symbol_sets = symbol_sets
@@ -230,10 +258,13 @@ impl SymbolService {
             })
             .collect::<Vec<_>>();
 
-        let content = Content::json(serde_json::json!({
+        let content = match Content::json(serde_json::json!({
             "symbol_sets": symbol_sets,
             "total_count": total_count
-        }))?;
+        })) {
+            Ok(content) => content,
+            Err(err) => return Err(err),
+        };
 
         info!(
             "Returning {} symbol sets (from total of {})",
@@ -255,10 +286,14 @@ impl SymbolService {
         info!("Tool call: search_symbol_sets");
         info!("Parameters: {}", pretty_print_params(&params));
 
-        let symbol_sets = self
+        let symbol_sets = match self
             .symbol_set_repository
             .search_symbol_sets(&params.query)
-            .await?;
+            .await
+        {
+            Ok(symbol_sets) => symbol_sets,
+            Err(err) => return Err(repository_error_to_rmcp_error(err)),
+        };
 
         let total_count = symbol_sets.len();
         let symbol_sets = symbol_sets
@@ -275,10 +310,13 @@ impl SymbolService {
             })
             .collect::<Vec<_>>();
 
-        let content = Content::json(serde_json::json!({
+        let content = match Content::json(serde_json::json!({
             "symbol_sets": symbol_sets,
             "total_count": total_count
-        }))?;
+        })) {
+            Ok(content) => content,
+            Err(err) => return Err(err),
+        };
 
         info!(
             "Found {} symbol sets matching query '{}' (from total of {})",
@@ -309,49 +347,47 @@ impl ServerHandler for SymbolService {
     }
 }
 
-impl From<DbError> for rmcp::Error {
-    fn from(err: DbError) -> Self {
-        match err {
-            DbError::NotFound => rmcp::Error::resource_not_found("Symbol not found", None),
-            DbError::Conflict(msg) => {
-                let error_msg = format!("Conflict: {}", msg);
-                rmcp::Error::invalid_request(error_msg, None)
-            }
-            DbError::Connection(msg) => {
-                let error_msg = format!("Database connection error: {}", msg);
-                rmcp::Error::internal_error(error_msg, None)
-            }
-            DbError::Sqlx(e) => {
-                let error_msg = format!("Database error: {}", e);
-                rmcp::Error::internal_error(error_msg, None)
-            }
+// Helper function to convert DbError to rmcp::Error
+fn db_error_to_rmcp_error(err: DbError) -> rmcp::Error {
+    match err {
+        DbError::NotFound => rmcp::Error::resource_not_found("Symbol not found", None),
+        DbError::Conflict(msg) => {
+            let error_msg = format!("Conflict: {}", msg);
+            rmcp::Error::invalid_request(error_msg, None)
+        }
+        DbError::Connection(msg) => {
+            let error_msg = format!("Database connection error: {}", msg);
+            rmcp::Error::internal_error(error_msg, None)
+        }
+        DbError::Sqlx(e) => {
+            let error_msg = format!("Database error: {}", e);
+            rmcp::Error::internal_error(error_msg, None)
         }
     }
 }
 
-impl From<RepositoryError> for rmcp::Error {
-    fn from(err: RepositoryError) -> Self {
-        match err {
-            RepositoryError::NotFound(msg) => {
-                let error_msg = format!("Not found: {}", msg);
-                rmcp::Error::resource_not_found(error_msg, None)
-            }
-            RepositoryError::Conflict(msg) => {
-                let error_msg = format!("Conflict: {}", msg);
-                rmcp::Error::invalid_request(error_msg, None)
-            }
-            RepositoryError::Internal(msg) => {
-                let error_msg = format!("Internal error: {}", msg);
-                rmcp::Error::internal_error(error_msg, None)
-            }
-            RepositoryError::Validation(msg) => {
-                let error_msg = format!("Validation error: {}", msg);
-                rmcp::Error::invalid_request(error_msg, None)
-            }
-            RepositoryError::NotImplemented(msg) => {
-                let error_msg = format!("Not implemented: {}", msg);
-                rmcp::Error::internal_error(error_msg, None)
-            }
+// Helper function to convert RepositoryError to rmcp::Error
+fn repository_error_to_rmcp_error(err: RepositoryError) -> rmcp::Error {
+    match err {
+        RepositoryError::NotFound(msg) => {
+            let error_msg = format!("Not found: {}", msg);
+            rmcp::Error::resource_not_found(error_msg, None)
+        }
+        RepositoryError::Conflict(msg) => {
+            let error_msg = format!("Conflict: {}", msg);
+            rmcp::Error::invalid_request(error_msg, None)
+        }
+        RepositoryError::Internal(msg) => {
+            let error_msg = format!("Internal error: {}", msg);
+            rmcp::Error::internal_error(error_msg, None)
+        }
+        RepositoryError::Validation(msg) => {
+            let error_msg = format!("Validation error: {}", msg);
+            rmcp::Error::invalid_request(error_msg, None)
+        }
+        RepositoryError::NotImplemented(msg) => {
+            let error_msg = format!("Not implemented: {}", msg);
+            rmcp::Error::internal_error(error_msg, None)
         }
     }
 }
