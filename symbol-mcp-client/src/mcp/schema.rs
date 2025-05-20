@@ -13,6 +13,10 @@ pub struct GetSymbolsParams {
     /// Maximum number of symbols to return
     #[serde(default = "default_limit")]
     pub limit: usize,
+
+    /// Optional category filter
+    #[serde(default)]
+    pub category: Option<String>,
 }
 
 /// Parameters for the search_symbols MCP method (with non-optional query parameter)
@@ -103,7 +107,10 @@ mod tests {
 
     #[test]
     fn test_get_symbols_params_serialization() {
-        let params = GetSymbolsParams { limit: 10 };
+        let params = GetSymbolsParams {
+            limit: 10,
+            category: None,
+        };
 
         let json = serde_json::to_value(params).unwrap();
 
@@ -114,6 +121,7 @@ mod tests {
     fn test_get_symbols_params_default_limit() {
         let params = GetSymbolsParams {
             limit: default_limit(),
+            category: None,
         };
 
         assert_eq!(params.limit, 50);

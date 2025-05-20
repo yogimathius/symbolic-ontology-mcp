@@ -2,20 +2,19 @@ use async_trait::async_trait;
 use serde_json;
 use std::sync::Arc;
 
-#[cfg(feature = "local")]
 use ontology_core::db::repository::SymbolRepository;
-#[cfg(feature = "local")]
-use ontology_core::domain::symbols::Symbol;
+use ontology_core::domain::Symbol;
 
-use crate::mcp::methods::get_symbols::{Handler, MethodCall, RmcpError};
+use crate::mcp::methods::{
+    get_symbols::{Handler, MethodCall, RmcpError},
+    utils::repository_error_to_rmcp_error,
+};
 use crate::mcp::schema::{GetSymbolsResponse, SearchSymbolsParams, SymbolDTO};
 
-#[cfg(feature = "local")]
 pub struct SearchSymbolsHandler {
     symbol_repository: Arc<dyn SymbolRepository>,
 }
 
-#[cfg(feature = "local")]
 impl SearchSymbolsHandler {
     pub fn new(symbol_repository: Arc<dyn SymbolRepository>) -> Self {
         SearchSymbolsHandler { symbol_repository }
@@ -32,7 +31,6 @@ impl SearchSymbolsHandler {
     }
 }
 
-#[cfg(feature = "local")]
 #[async_trait]
 impl Handler for SearchSymbolsHandler {
     fn method_name(&self) -> &str {
@@ -42,31 +40,41 @@ impl Handler for SearchSymbolsHandler {
     async fn handle(&self, call: MethodCall) -> Result<serde_json::Value, RmcpError> {
         let params: SearchSymbolsParams = call.parse_params()?;
 
-        let symbols = self.symbol_repository.search_symbols(&params.query).await?;
+        // Validate query
+        if params.query.trim().is_empty() {
+            return Err(RmcpError::ParseError(
+                "Search query cannot be empty".to_string(),
+            ));
+        }
 
-        let symbols = symbols
+        // Normalize query
+        let normalized_query = params.query.trim().to_lowercase();
+
+        // Perform search
+        let symbols = self
+            .symbol_repository
+            .search_symbols(&normalized_query)
+            .await
+            .map_err(repository_error_to_rmcp_error)?;
+
+        // Apply limit and convert to DTOs
+        let symbol_dtos = symbols
             .iter()
             .take(params.limit)
-            .map(|s| Self::to_dto(s))
+            .map(Self::to_dto)
             .collect::<Vec<_>>();
 
         let total_count = symbols.len();
 
         Ok(serde_json::to_value(GetSymbolsResponse {
-            symbols,
+            symbols: symbol_dtos,
             total_count,
         })?)
     }
 }
 
-#[cfg(feature = "local")]
 pub fn search_symbols(symbol_repository: Arc<dyn SymbolRepository>) -> SearchSymbolsHandler {
     SearchSymbolsHandler::new(symbol_repository)
-}
-
-#[cfg(not(feature = "local"))]
-pub fn search_symbols() {
-    // Stub for when local feature is not enabled
 }
 
 #[cfg(test)]
