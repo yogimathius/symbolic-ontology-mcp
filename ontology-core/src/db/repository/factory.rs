@@ -5,8 +5,8 @@ use sqlx::PgPool;
 use std::sync::Arc;
 
 use crate::db::repository::{
-    PgSymbolRepository, PgSymbolSetRepository,
     interfaces::{Repository, SymbolRepository, SymbolSetRepository},
+    PgSymbolRepository, PgSymbolSetRepository,
 };
 
 pub trait RepositoryFactory {
