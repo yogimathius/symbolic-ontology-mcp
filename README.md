@@ -15,88 +15,161 @@ symbol-ontology/
 ├── ontology-core/           # Core domain models and database logic
 ├── ontology-api-server/     # API server implementation
 ├── symbol-mcp-client/       # Public MCP client binary
-├── src/                     # Legacy code (being migrated)
-└── tests/                   # Integration tests
+├── tests/                   # Integration tests
+└── docs/                    # Documentation
 ```
+
+## Features
+
+### MCP Client Features
+
+- Direct database connectivity without requiring the API server
+- Full MCP protocol compliance with SSE transport for Claude integration
+- Available MCP methods:
+  - `get_symbols` - List all symbols with optional filtering
+  - `search_symbols` - Search symbols by text query
+  - `filter_by_category` - Get symbols filtered by category
+  - `get_categories` - Get all available symbol categories
+  - `get_symbol_sets` - List all symbol sets
+  - `search_symbol_sets` - Search symbol sets by name or description
+
+### API Server Features
+
+- REST API endpoints for symbol management
+- JSON response format
+- Database-backed persistence
+
+### Core Library Features
+
+- Domain models for symbols and symbol sets
+- Database repository interfaces and implementations
+- Shared utilities for both client and server
 
 ## Getting Started
 
-### Prerequisites
-
-- Rust 1.75.0 or later
-- PostgreSQL 15.0 or later (for production use)
-- SQLite 3.35.0 or later (for development/testing)
-
 ### Installation
 
-Clone the repository:
+#### Install from GitHub
 
 ```bash
-git clone https://github.com/yourusername/symbol-ontology.git
-cd symbol-ontology
+# Install the symbol-mcp-client package directly from GitHub
+cargo install --git https://github.com/yogimathius/symbolic-ontology-mcp symbol-mcp-client
+
+# Verify installation
+symbol-mcp --help
 ```
 
-### Development Setup
-
-1. Install dependencies:
+#### Build from Source
 
 ```bash
-cargo build
-```
+# Clone the repository
+git clone https://github.com/yogimathius/symbolic-ontology-mcp.git
+cd symbolic-ontology-mcp
 
-2. Set up the database:
+# Build the project
+cargo build --release
 
-```bash
-# Development with SQLite
-export DATABASE_URL="sqlite:symbol_ontology.db"
-
-# Or with PostgreSQL
-export DATABASE_URL="postgres://username:password@localhost/symbol_ontology"
-```
-
-## Usage
-
-### Running the API Server
-
-Start the API server:
-
-```bash
-cargo run -p ontology-api-server
-```
-
-The server will start on http://localhost:8080 by default. You can access the API at http://localhost:8080/api/v1/symbols.
-
-### Using the MCP Client
-
-Start the MCP client to connect to the API server:
-
-```bash
+# Run the MCP client
 cargo run -p symbol-mcp-client
 ```
 
-The client will start an MCP server on port 3000 by default, which connects to the API server at http://localhost:8080/api/v1.
+### Database Setup
 
-### Seeding Data
-
-Populate the database with symbols:
+Before running the MCP client, you need a PostgreSQL database:
 
 ```bash
-cargo run --bin ontology_seeder -- --test-data
+# Set up database connection string
+export DATABASE_URL=postgres://username:password@localhost:5432/symbol_ontology
+
+# Create database (if it doesn't exist)
+createdb symbol_ontology
+```
+
+### Running the Client
+
+Start the MCP client to serve symbolic queries:
+
+```bash
+# Run with default settings
+symbol-mcp
+
+# Run with custom database URL
+symbol-mcp --database-url postgres://username:password@localhost:5432/symbol_ontology
+
+# Run with debug logging
+symbol-mcp --verbose
+```
+
+### Integration with Cursor
+
+To use Symbol Ontology with Cursor AI:
+
+1. Start the MCP server locally:
+
+   ```bash
+   symbol-mcp
+   ```
+
+   The server will start at http://localhost:3000 by default.
+
+2. In Cursor, open the settings:
+
+   - Navigate to the "MCP" section
+
+3. Add a new MCP provider:
+
+   - Name: Symbol Ontology
+   - URL: http://localhost:3000/sse
+   - Authentication: None (or as required)
+
+4. Save your settings
+
+5. The symbol-ontology tools will now be available in Cursor AI.
+
+### Running the API Server (Optional)
+
+The API server provides REST endpoints if needed:
+
+```bash
+# Run from the project directory
+cargo run -p ontology-api-server
 ```
 
 ## API Reference
 
-### Endpoints
-
-- `GET /api/v1/symbols` - List all symbols or filter by category/query
-- `GET /api/v1/symbols/:id` - Get a specific symbol by ID
-- `POST /api/v1/symbols` - Create a new symbol
-- `DELETE /api/v1/symbols/:id` - Delete a symbol
-
 ### MCP Methods
 
-- `get_symbols` - Get a list of symbols with optional filtering
-  - Parameters: `query` (optional), `category` (optional)
+| Method               | Description                | Parameters                                                                 |
+| -------------------- | -------------------------- | -------------------------------------------------------------------------- |
+| `get_symbols`        | List all symbols           | `limit` (optional): Maximum symbols to return                              |
+| `search_symbols`     | Search symbols by text     | `query`: Search text<br>`limit` (optional): Maximum symbols to return      |
+| `filter_by_category` | Filter symbols by category | `category`: Category name<br>`limit` (optional): Maximum symbols to return |
+| `get_categories`     | List all categories        | None                                                                       |
+| `get_symbol_sets`    | List all symbol sets       | `limit` (optional): Maximum sets to return                                 |
+| `search_symbol_sets` | Search symbol sets         | `query`: Search text<br>`limit` (optional): Maximum sets to return         |
+
+### REST API Endpoints
+
+| Endpoint              | Method | Description                                  |
+| --------------------- | ------ | -------------------------------------------- |
+| `/api/v1/symbols`     | GET    | List all symbols or filter by category/query |
+| `/api/v1/symbols/:id` | GET    | Get a specific symbol by ID                  |
+| `/api/v1/symbols`     | POST   | Create a new symbol                          |
+| `/api/v1/symbols/:id` | PUT    | Update a symbol                              |
+| `/api/v1/symbols/:id` | DELETE | Delete a symbol                              |
+
+## Upcoming Features
+
+The following features are planned for future releases:
+
+- Database seeding tool for easy initialization
+- Improved SSE integration for the MCP client
+- Authentication for the API server
+- Rate limiting for the API server
+- License validation
+- Centralized logging setup
+- Improved configuration system
+- More comprehensive documentation
 
 ## License
 
