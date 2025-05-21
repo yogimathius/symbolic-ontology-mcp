@@ -1,88 +1,51 @@
-# Symbol Ontology MCP Project Documentation
+# Symbol Ontology Documentation
 
-This directory contains documentation for the Symbol Ontology MCP (Model Context Protocol) project, a Rust-based symbolic reasoning engine that implements the Model Context Protocol.
+Welcome to the Symbol Ontology project documentation. This repository organizes all documentation resources for understanding, using, and developing the Symbol Ontology MCP Server.
 
-## Current Documentation
+## Documentation Structure
 
-### API Documentation
+This documentation is organized into the following sections:
 
-- [API Test Requests](api_test_requests.md) - List of curl commands for testing API endpoints
-- [MCP Implementation](mcp_implementation.md) - Details about the MCP implementation
+### 📐 Architecture
 
-### Development Planning
+- [System Overview](./architecture/overview.md) - High-level architecture and component relationships
+- [Tech Stack](./architecture/tech-stack.md) - Technical components and implementation details
 
-- [V1.5 Checklist](v1.5-checklist.md) - Current detailed roadmap and checklist for the v1.5 MVP
-- [Project README](project-readme.md) - Original project README
+### 🔬 Research
 
-### MCP Integration
+- [Research Papers](./research/papers.md) - Curated collection of academic papers relevant to the project
+- [Symbolic Reasoning](./research/symbolic-reasoning.md) - Key concepts in symbolic reasoning and ontologies
 
-- [Cursor MCP Integration](cursor-mcp-integration.md) - Guide for integrating with Cursor
-- [MCP Prompt Templates](mcp-prompt-templates.md) - Example prompts for using the MCP server
+### 🛠 Development
 
-### Architecture
+- [V2 Roadmap](./development/v2-roadmap.md) - Planned features and improvements for version 2
+- [Implementation Guide](./development/implementation-guide.md) - Technical guidance for developers
 
-- [Requirements](architecture/requirements.md) - Project requirements specification
-- [Backend Tech Stack](architecture/backend-tech-stack.md) - Overview of the backend technology stack
+### 📚 Usage
 
-### Research
+- [MCP Prompt Templates](./usage/mcp-prompt-templates.md) - Templates for effective use of the Symbol Ontology MCP
 
-- [MCP Symbolic Reasoning](research/mcps-symbolic-reasoning.md) - Research on MCP and symbolic reasoning
-- [Ontology Research](research/ontology-research.md) - Research on symbolic ontologies and their structure
+## Quick Start
 
-### Scripts
+The Symbol Ontology project consists of two main components:
 
-- [`scripts/test_api.sh`](../scripts/test_api.sh) - Shell script to test API and MCP endpoints
+1. **Symbol Ontology MCP Server** (this repository) - Provides symbolic knowledge through the Model Context Protocol
+2. **Dream Interpretation Client** (separate repository) - Consumes symbolic data and integrates with LLMs
 
-## Completed/Legacy Documentation
+To get started:
 
-Documentation about completed work or historical requirements:
+1. Review the [System Overview](./architecture/overview.md) to understand the architecture
+2. Explore the [MCP Prompt Templates](./usage/mcp-prompt-templates.md) to learn how to interact with the system
+3. Check the [V2 Roadmap](./development/v2-roadmap.md) for upcoming features and improvements
 
-- [Foundational Checklist](completed/foundational-checklist.md) - Core requirements that have been implemented
-- [Updated Checklist](completed/updated-checklist.md) - Revised checklist with progress updates
-- [Development Checklist](completed/development-checklist.md) - Original development roadmap (archived)
-- [MVP Roadmap](completed/mvp-roadmap.md) - Original MVP roadmap (archived)
-- [Missing Requirements Analysis](completed/missing-requirements.md) - Previous gap analysis (archived)
+## Contributing
 
-## Backlog Documentation
+We welcome contributions to both the codebase and documentation. If you're interested in contributing:
 
-Ideas and requirements for future implementation:
+1. Review the existing documentation to understand the system
+2. Check the [V2 Roadmap](./development/v2-roadmap.md) for planned improvements
+3. Submit pull requests with clear descriptions of changes or improvements
 
-- [Tower Requirements](backlog/tower-requirements.md) - Requirements for Tower middleware integration
-- [Future Development Items](backlog/future-development.md) - Features planned for future versions
+## License
 
-## Directory Structure
-
-The documentation is organized into the following directories:
-
-```
-docs/
-  ├── README.md                           # This index file
-  ├── v1.5-checklist.md                   # Current development checklist
-  ├── cursor-mcp-integration.md           # Cursor integration guide
-  ├── mcp-prompt-templates.md             # Example MCP prompts
-  ├── mcp_implementation.md               # MCP implementation details
-  ├── project-readme.md                   # Original project README
-  ├── architecture/                       # System architecture documentation
-  │   ├── backend-tech-stack.md           # Backend technology documentation
-  │   └── requirements.md                 # Project requirements
-  ├── completed/                          # Documentation for completed work
-  │   ├── foundational-checklist.md       # Completed foundational tasks
-  │   ├── updated-checklist.md            # Completed items with progress updates
-  │   ├── development-checklist.md        # Original development roadmap
-  │   ├── mvp-roadmap.md                  # Original MVP roadmap
-  │   └── missing-requirements.md         # Previous gap analysis
-  ├── research/                           # Research documentation
-  │   ├── mcps-symbolic-reasoning.md      # Research on MCP and symbolic reasoning
-  │   └── ontology-research.md            # Research on symbolic ontologies
-  └── backlog/                            # Future implementation ideas
-      ├── tower-requirements.md           # Tower middleware requirements
-      └── future-development.md           # Features for future versions
-```
-
-## How to Use This Documentation
-
-- For current development priorities, refer to `v1.5-checklist.md`
-- For API testing, use `api_test_requests.md` or the test script in `scripts/`
-- For historical context on what's been implemented, check the `completed/` directory
-- For future planning and ideas, see the `backlog/` directory
-- For architectural design and research, see the respective subdirectories
+This project is dual-licensed under Mozilla Public License 2.0 (for non-commercial use) and a Commercial License (for business/for-profit use). See the [LICENSE.md](../LICENSE.md) file for details.
