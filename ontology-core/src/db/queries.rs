@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0 OR Commercial
 // Copyright (c) 2024 Symbol Ontology Contributors
 
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 use tracing::info;
 
 use crate::db::models::{Symbol, SymbolSet};

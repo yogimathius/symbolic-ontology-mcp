@@ -1,18 +1,20 @@
 version: "3.8"
 
 services:
-  postgres:
-    image: pgvector/pgvector:latest
-    container_name: dream_ontology_db
+  symbol-mcp-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: symbol_mcp
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: symbol_ontology
+      DATABASE_URL: ${DATABASE_URL}
+      RUST_LOG: info
+      MCP_PORT: 3002
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "3002:3002"
     restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
 
 volumes:
   postgres_data:

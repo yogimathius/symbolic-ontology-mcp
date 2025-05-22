@@ -11,22 +11,22 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY . .
-RUN cargo build --release --bin mcp_server
-RUN cargo build --release --bin mcp_client
-RUN cargo build --release --bin ontology_seeder
+# Build only the symbol-mcp-client
+RUN cargo build --release --package symbol-mcp-client --bin symbol-mcp
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Copy server binaries
-COPY --from=builder /app/target/release/mcp_server /usr/local/bin
-COPY --from=builder /app/target/release/mcp_client /usr/local/bin
-COPY --from=builder /app/target/release/ontology_seeder /usr/local/bin
+# Copy the compiled binary
+COPY --from=builder /app/target/release/symbol-mcp /usr/local/bin
 
-# Expose API port
+# Create a directory for logs
+RUN mkdir -p /app/logs
+
+# Expose MCP port
 EXPOSE 3002
 
-# Default to running the MCP SSE server
-ENTRYPOINT ["/usr/local/bin/mcp_server"]
+# Default to running the MCP client
+ENTRYPOINT ["/usr/local/bin/symbol-mcp"]

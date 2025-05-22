@@ -1,4 +1,30 @@
-/target
-.git
-.env
+# Generated files
+/target/
+**/*.rs.bk
+
+# Git and GitHub files
+.git/
+.github/
+.gitignore
+
+# Development environment files
+.idea/
+.vscode/
+*.iml
+*.swp
 .DS_Store
+
+# Documentation files (except those needed for the build)
+/docs/
+
+# Test data and test files
+/tests/
+
+# Environment files (but keep example)
+.env*
+!.env.example
+
+# Don't exclude README.md as it might be needed for cargo metadata
+!README.md
+!LICENSE.md
+!COMMERCIAL_LICENSE.md

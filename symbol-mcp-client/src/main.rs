@@ -3,6 +3,7 @@
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
+use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
@@ -17,12 +18,36 @@ use rmcp::transport::sse_server::{SseServer, SseServerConfig};
 mod mcp;
 use mcp::service::SymbolService;
 
+// TODO: SSE Timeout Alternatives
+//
+// There are several better approaches to handling SSE timeouts:
+//
+// 1. Fork the RMCP library to add built-in heartbeat support
+//    - Add a heartbeat_interval option to SseServerConfig
+//    - Modify the SseServer implementation to send periodic comments
+//
+// 2. Use a different MCP transport that supports WebSockets
+//    - WebSockets have built-in ping/pong frames for keepalive
+//    - The MCP spec supports WebSocket transport
+//
+// 3. Modify the proxy configuration (for fly.io)
+//    - Set HTTP_PROXY_CONNECT_TIMEOUT and HTTP_PROXY_IDLE_TIMEOUT environment variables
+//    - Configure TCP keepalive at the operating system level
+//
+// 4. Use a custom middleware approach to wrap the SSE stream
+//    - Implement a wrapper around SseServer that injects heartbeat events
+//    - This is the most complex but least invasive option
+
 #[derive(Parser, Debug)]
 #[clap(name = "symbol-mcp", about = "Symbol Ontology MCP Client", version)]
 struct Args {
     /// Port to listen on for local server
     #[arg(short, long, env("PORT"), default_value = "3000")]
     port: u16,
+
+    /// Environment variable for MCP port, overrides port argument
+    #[arg(long, env("MCP_PORT"))]
+    mcp_port: Option<u16>,
 
     /// Verbosity level (can be used multiple times)
     #[arg(short, long, env("VERBOSE"), action = clap::ArgAction::Count)]
@@ -35,6 +60,10 @@ struct Args {
         default_value = "postgres://postgres:postgres@localhost:5432/symbol_ontology"
     )]
     database_url: String,
+
+    /// Heartbeat interval in seconds
+    #[arg(long, env("HEARTBEAT_INTERVAL"), default_value = "30")]
+    heartbeat_interval: u64,
 }
 
 #[tokio::main]
@@ -60,8 +89,11 @@ async fn main() -> Result<()> {
     };
     debug!("Verbosity level: {}", verbosity);
 
-    // Create socket address
-    let addr = SocketAddr::from(([0, 0, 0, 0], args.port));
+    // Use MCP_PORT if available, fall back to PORT argument
+    let port = args.mcp_port.unwrap_or(args.port);
+
+    // Create socket address - always bind to 0.0.0.0 to listen on all interfaces
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     // Connect to database
     info!("Connecting to database at {}", args.database_url);
@@ -115,9 +147,13 @@ async fn main() -> Result<()> {
     info!("Categories: {}", categories.join(", "));
 
     info!("Starting server on {}", addr);
-    info!("SSE endpoint: http://localhost:{}/sse", args.port);
-    info!("Message endpoint: http://localhost:{}/message", args.port);
+    info!("SSE endpoint: http://0.0.0.0:{}/sse", port);
+    info!("Message endpoint: http://0.0.0.0:{}/message", port);
+    info!("Heartbeat interval: {} seconds", args.heartbeat_interval);
     info!("==============================");
+
+    // Configure heartbeat interval
+    let heartbeat_interval = Duration::from_secs(args.heartbeat_interval);
 
     // Create a proper transport
     let config = SseServerConfig {

@@ -5,7 +5,7 @@ use sqlx::PgPool;
 use std::sync::Arc;
 
 use crate::db::repository::{
-    interfaces::{Repository, SymbolRepository, SymbolSetRepository},
+    interfaces::{SymbolRepository, SymbolSetRepository},
     PgSymbolRepository, PgSymbolSetRepository,
 };
 

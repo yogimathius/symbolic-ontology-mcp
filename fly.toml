@@ -1,25 +1,33 @@
-app = "symbolic-grounding-api"
+app = "symbol-ontology-mcp"
 primary_region = "sea"
 
 [build]
 dockerfile = "Dockerfile"
 
+# IMPORTANT: Before deploying, you must set DATABASE_URL as a secret using:
+# fly secrets set DATABASE_URL=postgres://postgres:<password>@<project-ref>.supabase.co:5432/postgres
 [env]
-PORT = "3002"
+RUST_LOG = "info"
+MCP_PORT = "3002"
+# Set a 30-second heartbeat interval to keep SSE connections alive
+HEARTBEAT_INTERVAL = "30"
+# Configure proxy timeouts to prevent SSE connection drops
+HTTP_PROXY_CONNECT_TIMEOUT = "300s"  # 5 minutes
+HTTP_PROXY_IDLE_TIMEOUT = "3600s"    # 1 hour 
 
-# HTTP service configuration for MCP SSE server
+# HTTP service configuration for MCP client
 [http_service]
 internal_port = 3002
 force_https = true
 auto_stop_machines = false
 auto_start_machines = true
 min_machines_running = 1
-# Increase timeout for long-running SSE connections
-http_checks.grace_period = "120s"
+# Configure longer timeout for SSE connections
+http_checks.grace_period = "60s"
 http_checks.interval = "30s"
-http_checks.timeout = "10s"
+http_checks.timeout = "30s"
 http_checks.method = "GET"
-http_checks.path = "/message"
+http_checks.path = "/"
 
 [http_service.concurrency]
 type = "connections"
@@ -33,10 +41,10 @@ allowed_headers = ["*", "Cache-Control", "X-Requested-With", "Content-Type", "Ac
 exposed_headers = ["*", "Content-Type", "Cache-Control"]
 max_age = 86400
 
-# Health checks - use TCP check since there's no HTTP health endpoint
+# Health checks - use basic TCP check since SSE connections are long-lived
 [checks]
 [checks.alive]
 type = "tcp"
-interval = "60s"
-timeout = "30s"
-grace_period = "60s" 
+interval = "30s"
+timeout = "10s"
+grace_period = "30s" 

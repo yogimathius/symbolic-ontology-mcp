@@ -85,6 +85,69 @@ export DATABASE_URL=postgres://username:password@localhost:5432/symbol_ontology
 createdb symbol_ontology
 ```
 
+### Required Environment Variables
+
+The Symbol Ontology MCP client requires the following environment variables:
+
+| Variable     | Description                          | Example                                        |
+| ------------ | ------------------------------------ | ---------------------------------------------- |
+| DATABASE_URL | PostgreSQL connection string         | postgres://user:pass@host:5432/symbol_ontology |
+| MCP_PORT     | Port for the MCP client to listen on | 3002                                           |
+| RUST_LOG     | Log level (debug, info, warn, error) | info                                           |
+
+### Docker Deployment
+
+You can easily run the Symbol Ontology MCP client using Docker:
+
+```bash
+# Build the Docker image
+docker build -t symbol-ontology-mcp .
+
+# Run the container
+docker run -p 3002:3002 \
+  -e DATABASE_URL=postgres://user:pass@host:5432/symbol_ontology \
+  -e RUST_LOG=info \
+  -e MCP_PORT=3002 \
+  symbol-ontology-mcp
+```
+
+#### Using docker-compose
+
+```bash
+# Create a .env file with your DATABASE_URL
+echo "DATABASE_URL=postgres://user:pass@host:5432/symbol_ontology" > .env
+
+# Start the service
+docker-compose up -d
+```
+
+#### Deploying to Fly.io
+
+This project includes configuration for deploying to Fly.io:
+
+1. Install the Fly CLI:
+
+   ```bash
+   curl -L https://fly.io/install.sh | sh
+   ```
+
+2. Login to Fly.io:
+
+   ```bash
+   fly auth login
+   ```
+
+3. Set your database secret:
+
+   ```bash
+   fly secrets set DATABASE_URL=postgres://postgres:password@your-project.supabase.co:5432/postgres
+   ```
+
+4. Deploy the application:
+   ```bash
+   fly deploy
+   ```
+
 ### Running the Client
 
 Start the MCP client to serve symbolic queries:
